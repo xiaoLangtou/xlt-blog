@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: core_components/text_effects
+title: 文本动效组件集（数字滚动、文字滚动、节日横幅）
+scope:
+    - src/components/core/text-effect/
+source_files: []
+depends_on: []
+related_to: []

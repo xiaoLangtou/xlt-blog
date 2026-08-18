@@ -1,0 +1,192 @@
+.simple-toolbar {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 5px 12px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--default-border);
+  scrollbar-width: none;
+}
+
+.simple-toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+.simple-toolbar__group {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.simple-toolbar__divider {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 20px;
+  margin: 0 5px;
+  background: var(--default-border);
+}
+
+.simple-toolbar .el-button {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  color: var(--art-gray-700);
+  border-radius: 7px;
+}
+
+.simple-toolbar .el-button:hover {
+  color: var(--art-gray-900);
+  background: var(--art-hover-color);
+}
+
+.simple-toolbar .el-button--primary {
+  color: var(--theme-color);
+  background: color-mix(in srgb, var(--theme-color) 11%, transparent);
+}
+
+.simple-toolbar__wide {
+  gap: 5px;
+  min-width: 64px !important;
+}
+
+.link-popover {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 6px;
+}
+
+.editor-search {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  gap: 5px;
+  padding: 7px 12px;
+  background: var(--default-box-color);
+  border-bottom: 1px solid var(--default-border);
+  box-shadow: 0 5px 14px rgb(0 0 0 / 5%);
+}
+
+.editor-search__row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.editor-search__row .el-input {
+  width: min(280px, 42vw);
+}
+
+.editor-search__row .el-button {
+  height: 28px;
+  padding: 0 8px;
+}
+
+.editor-search__count {
+  min-width: 48px;
+  font-size: 12px;
+  color: var(--art-gray-600);
+  text-align: center;
+}
+
+/* .table-grid-picker 的样式已迁移到 TableGridPicker.vue 的 scoped <style> 中，
+   此处不再保留全局规则，避免与组件内固定尺寸网格冲突。 */
+
+.table-menu {
+  display: grid;
+  gap: 2px;
+}
+
+.table-menu__trigger {
+  display: inline-flex;
+  align-items: center;
+}
+
+.table-menu > button {
+  width: 100%;
+  padding: 7px 9px;
+  color: var(--art-gray-800);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+}
+
+.table-menu > button:hover:not(:disabled) {
+  background: var(--art-hover-color);
+}
+
+.table-menu > button:disabled {
+  color: var(--art-gray-500);
+  cursor: not-allowed;
+}
+
+.table-menu > button.is-danger {
+  color: var(--el-color-danger);
+}
+
+.table-menu > span {
+  height: 1px;
+  margin: 3px 0;
+  background: var(--default-border);
+}
+
+.table-menu__group {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.table-menu__group > button {
+  padding: 6px 3px;
+  color: var(--art-gray-700);
+  cursor: pointer;
+  background: var(--default-bg-color);
+  border: 1px solid var(--default-border);
+  border-radius: 4px;
+}
+
+.table-menu__group > button:hover {
+  border-color: var(--theme-color);
+}
+
+.table-menu__group .color-neutral {
+  background: color-mix(in srgb, var(--art-gray-500) 18%, var(--default-box-color));
+}
+
+.table-menu__group .color-amber {
+  background: color-mix(in srgb, #f59e0b 22%, var(--default-box-color));
+}
+
+.table-menu__group .color-blue {
+  background: color-mix(in srgb, #3b82f6 20%, var(--default-box-color));
+}
+
+.search-result {
+  background: color-mix(in srgb, var(--el-color-warning) 34%, transparent);
+}
+
+.search-result-current {
+  background: color-mix(in srgb, var(--el-color-warning) 64%, transparent);
+  outline: 1px solid var(--el-color-warning);
+}
+
+@media (width <= 760px) {
+  .simple-toolbar {
+    padding-inline: 8px;
+  }
+
+  .simple-toolbar__divider {
+    margin-inline: 2px;
+  }
+
+  .editor-search__row {
+    flex-wrap: wrap;
+  }
+
+  .editor-search__row .el-input {
+    width: min(100%, 260px);
+  }
+}

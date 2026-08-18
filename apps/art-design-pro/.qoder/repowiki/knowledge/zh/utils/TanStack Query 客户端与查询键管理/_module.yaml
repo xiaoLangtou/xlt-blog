@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: utils/query_utils
+title: TanStack Query 客户端与查询键管理
+scope:
+    - src/utils/query/
+source_files: []
+depends_on: []
+related_to: []

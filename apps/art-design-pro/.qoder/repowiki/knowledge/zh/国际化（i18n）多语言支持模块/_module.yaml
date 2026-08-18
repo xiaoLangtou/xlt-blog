@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: locales
+title: 国际化（i18n）多语言支持模块
+scope:
+    - src/locales/
+source_files: []
+depends_on: []
+related_to: []

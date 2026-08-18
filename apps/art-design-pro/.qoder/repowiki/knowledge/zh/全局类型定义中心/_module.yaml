@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: types
+title: 全局类型定义中心
+scope:
+    - src/types/
+source_files: []
+depends_on: []
+related_to: []

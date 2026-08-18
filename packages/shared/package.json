@@ -1,0 +1,36 @@
+{
+  "name": "@xlt-blog/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown src/index.ts --dts --format esm,cjs",
+    "dev": "tsdown src/index.ts --dts --format esm,cjs --watch"
+  },
+  "devDependencies": {
+    "@types/sanitize-html": "catalog:",
+    "tsdown": "^0.22.14",
+    "typescript": "~5.9.3"
+  },
+  "dependencies": {
+    "sanitize-html": "catalog:"
+  }
+}

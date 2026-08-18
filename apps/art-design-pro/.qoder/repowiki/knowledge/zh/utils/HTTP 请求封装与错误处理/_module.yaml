@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: utils/http_utils
+title: HTTP 请求封装与错误处理
+scope:
+    - src/utils/http/
+source_files: []
+depends_on: []
+related_to: []

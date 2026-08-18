@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: views/daemon
+title: 守护进程监控视图（缓存、任务与日志）
+scope:
+    - src/views/daemon/
+source_files: []
+depends_on: []
+related_to: []

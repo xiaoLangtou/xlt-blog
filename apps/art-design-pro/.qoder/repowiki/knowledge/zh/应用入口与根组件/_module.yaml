@@ -1,0 +1,11 @@
+schema_version: 1
+module_path: entry_point
+title: 应用入口与根组件
+scope:
+    - src/App.vue
+    - src/main.ts
+    - src/env.d.ts
+    - index.html
+source_files: []
+depends_on: []
+related_to: []

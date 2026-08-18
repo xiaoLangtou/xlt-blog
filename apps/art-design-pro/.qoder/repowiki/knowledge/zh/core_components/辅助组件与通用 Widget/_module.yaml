@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: core_components/others_and_widget
+title: 辅助组件与通用 Widget
+scope:
+    - src/components/core/others/
+    - src/components/core/widget/
+source_files: []
+depends_on: []
+related_to: []

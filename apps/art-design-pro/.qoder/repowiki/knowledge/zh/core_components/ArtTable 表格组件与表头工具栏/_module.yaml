@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: core_components/tables
+title: ArtTable 表格组件与表头工具栏
+scope:
+    - src/components/core/tables/
+source_files: []
+depends_on: []
+related_to: []

@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: directives
+title: Vue 全局指令集（权限、角色、代码高亮、水波纹）
+scope:
+    - src/directives/
+source_files: []
+depends_on: []
+related_to: []

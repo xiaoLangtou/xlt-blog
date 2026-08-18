@@ -1,0 +1,20 @@
+<svg width="200" height="160" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield background -->
+  <ellipse cx="100" cy="140" rx="70" ry="8" fill="#e8ecf1" />
+  <!-- Person body -->
+  <circle cx="100" cy="58" r="28" fill="#c8d6e5" />
+  <path d="M52 120c0-20 21.5-36 48-36s48 16 48 36" fill="#c8d6e5" />
+  <!-- Person top overlay -->
+  <circle cx="100" cy="62" r="22" fill="#a0b4cc" />
+  <path d="M60 118c0-16 18-30 40-30s40 14 40 30" fill="#a0b4cc" />
+  <!-- Shield -->
+  <path d="M100 48l38 14v26c0 24-16 34-38 42-22-8-38-18-38-42V62l38-14z" fill="#5b8def" opacity="0.25" />
+  <path d="M100 52l32 12v22c0 20-13 28-32 35-19-7-32-15-32-35V64l32-12z" fill="#5b8def" opacity="0.15" />
+  <!-- Checkmark in shield -->
+  <path d="M88 92l8 7 16-18" stroke="#5b8def" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6" />
+  <!-- Stars/decorations -->
+  <circle cx="54" cy="50" r="2.5" fill="#dfe6e9" />
+  <circle cx="150" cy="70" r="2" fill="#dfe6e9" />
+  <circle cx="44" cy="80" r="1.5" fill="#dfe6e9" />
+  <rect x="148" y="48" width="6" height="6" rx="1.5" fill="#dfe6e9" transform="rotate(15 148 48)" />
+</svg>

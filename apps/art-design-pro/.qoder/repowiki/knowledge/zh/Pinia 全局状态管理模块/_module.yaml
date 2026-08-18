@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: store
+title: Pinia 全局状态管理模块
+scope:
+    - src/store/
+source_files: []
+depends_on: []
+related_to: []

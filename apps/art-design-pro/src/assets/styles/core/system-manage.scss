@@ -1,0 +1,351 @@
+// System management pages: reference-inspired structure, system-driven theme.
+.system-manage-page {
+  --system-bg: var(--default-bg-color);
+  --system-surface: var(--default-box-color);
+  --system-card: var(--default-box-color);
+  --system-elevated: var(--art-gray-200);
+  --system-input: var(--default-box-color);
+  --system-hover: var(--art-hover-color);
+  --system-border: var(--default-border);
+  --system-border-subtle: var(--art-card-border);
+  --system-accent: var(--theme-color);
+  --system-accent-soft: color-mix(in srgb, var(--theme-color) 12%, transparent);
+  --system-blue: var(--art-info);
+  --system-blue-soft: color-mix(in srgb, var(--art-info) 12%, transparent);
+  --system-green: var(--art-success);
+  --system-green-soft: color-mix(in srgb, var(--art-success) 12%, transparent);
+  --system-red: var(--art-danger);
+  --system-red-soft: color-mix(in srgb, var(--art-danger) 12%, transparent);
+  --system-purple: var(--art-secondary);
+  --system-purple-soft: color-mix(in srgb, var(--art-secondary) 12%, transparent);
+  --system-teal: var(--art-secondary);
+  --system-teal-soft: color-mix(in srgb, var(--art-secondary) 12%, transparent);
+  --system-text: var(--art-gray-900);
+  --system-secondary: var(--art-gray-700);
+  --system-muted: var(--art-gray-600);
+
+  padding: 16px;
+  color: var(--system-text);
+  background:
+    radial-gradient(
+      ellipse at 12% 16%,
+      color-mix(in srgb, var(--theme-color) 4%, transparent),
+      transparent 42%
+    ),
+    radial-gradient(
+      ellipse at 88% 76%,
+      color-mix(in srgb, var(--art-secondary) 4%, transparent),
+      transparent 44%
+    ),
+    var(--system-bg);
+  border-radius: calc(var(--custom-radius) / 2 + 4px);
+
+  .art-search-bar {
+    margin-bottom: 12px;
+    background: var(--system-card);
+    border-color: var(--system-border-subtle);
+    box-shadow: none;
+
+    .el-form-item__label {
+      color: var(--system-secondary) !important;
+    }
+
+    .el-input__wrapper,
+    .el-select__wrapper,
+    .el-date-editor.el-input__wrapper {
+      background: var(--system-input);
+      border-radius: 6px;
+      box-shadow: 0 0 0 1px var(--system-border-subtle) inset;
+    }
+
+    .el-input__wrapper.is-focus,
+    .el-select__wrapper.is-focused {
+      box-shadow:
+        0 0 0 1px var(--system-accent) inset,
+        0 0 0 3px var(--system-accent-soft);
+    }
+
+    .el-input__inner,
+    .el-select__placeholder,
+    .el-select__selected-item {
+      color: var(--system-text);
+    }
+  }
+
+  .art-table-card {
+    min-height: 0;
+    background: var(--system-card);
+    border-color: var(--system-border-subtle) !important;
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--art-gray-900) 8%, transparent) !important;
+
+    .el-card__header {
+      padding: 16px 18px;
+      background: var(--system-surface);
+      border-bottom-color: var(--system-border-subtle);
+    }
+
+    #art-table-header {
+      padding-bottom: 12px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid var(--system-border-subtle);
+    }
+
+    .el-table {
+      --el-table-bg-color: var(--system-card);
+      --el-table-tr-bg-color: var(--system-card);
+      --el-table-expanded-cell-bg-color: var(--system-card);
+      --el-table-header-bg-color: var(--system-elevated);
+      --el-table-row-hover-bg-color: var(--system-hover);
+      --el-table-border-color: var(--system-border-subtle);
+      --el-table-text-color: var(--system-secondary);
+      --el-table-header-text-color: var(--system-muted);
+
+      color: var(--system-secondary);
+      background: var(--system-card);
+
+      .el-table__header th {
+        font-size: 11px;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        color: var(--system-muted);
+        text-transform: uppercase;
+        background: var(--system-elevated) !important;
+      }
+
+      .el-table__cell {
+        border-bottom-color: var(--system-border-subtle);
+      }
+    }
+  }
+
+  .el-button {
+    border-radius: 6px;
+  }
+
+  .el-button--primary {
+    color: var(--el-color-white);
+    background: var(--system-accent);
+    border-color: var(--system-accent);
+  }
+
+  .el-button--primary:hover {
+    background: var(--el-color-primary-light-3);
+    border-color: var(--el-color-primary-light-3);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--theme-color) 24%, transparent);
+  }
+
+  .el-button:not(.el-button--primary) {
+    color: var(--system-secondary);
+    background: transparent;
+    border-color: var(--system-border);
+  }
+
+  .el-button:not(.el-button--primary):hover {
+    color: var(--system-text);
+    background: var(--system-hover);
+    border-color: var(--system-muted);
+  }
+
+  #art-table-header .button {
+    color: var(--system-secondary);
+    background: var(--system-input);
+    border: 1px solid var(--system-border-subtle);
+  }
+}
+
+.system-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.system-stat-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  padding: 13px 15px;
+  background: var(--system-card);
+  border: 1px solid var(--system-border-subtle);
+  border-radius: 10px;
+}
+
+.system-stat-card:hover {
+  border-color: var(--system-border);
+}
+
+.system-stat-icon {
+  display: flex;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  align-items: center;
+  justify-content: center;
+  color: var(--system-accent);
+  background: var(--system-accent-soft);
+  border-radius: 10px;
+}
+
+.system-stat-icon.is-blue {
+  color: var(--system-blue);
+  background: var(--system-blue-soft);
+}
+
+.system-stat-icon.is-green {
+  color: var(--system-green);
+  background: var(--system-green-soft);
+}
+
+.system-stat-icon.is-purple {
+  color: var(--system-purple);
+  background: var(--system-purple-soft);
+}
+
+.system-stat-icon.is-red {
+  color: var(--system-red);
+  background: var(--system-red-soft);
+}
+
+.system-stat-label {
+  margin-bottom: 2px;
+  overflow: hidden;
+  font-size: 11px;
+  color: var(--system-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.system-stat-value {
+  font-size: 20px;
+  font-weight: 750;
+  line-height: 24px;
+  color: var(--system-text);
+}
+
+.system-manage-card-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.system-manage-title-stack {
+  min-width: 0;
+}
+
+.system-manage-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  color: var(--system-text);
+}
+
+.system-manage-actions,
+.system-row-actions {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.system-row-actions {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.system-entity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.system-entity__avatar {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  margin-right: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--system-border);
+}
+
+.system-entity__content {
+  min-width: 0;
+}
+
+.system-entity__title {
+  margin: 0;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--system-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.system-entity__desc {
+  margin: 1px 0 0;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 17px;
+  color: var(--system-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.system-code-pill {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 24px;
+  align-items: center;
+  padding: 0 8px;
+  overflow: hidden;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  font-size: 11px;
+  color: var(--system-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--system-input);
+  border: 1px solid var(--system-border-subtle);
+  border-radius: 4px;
+}
+
+.system-muted-text {
+  color: var(--system-muted);
+}
+
+.system-tag.el-tag {
+  border-color: transparent;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@media (max-width: 1180px) {
+  .system-stats-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .system-manage-page {
+    padding: 12px;
+  }
+
+  .system-stats-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .system-manage-card-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .system-manage-actions {
+    flex-wrap: wrap;
+  }
+}

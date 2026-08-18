@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: router
+title: Vue Router 路由与权限控制系统
+scope:
+    - src/router/
+source_files: []
+depends_on: []
+related_to: []

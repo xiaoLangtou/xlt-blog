@@ -1,0 +1,27 @@
+// 角色管理页面 — 跨组件共享样式
+// 各组件专属样式已内聚到对应的 .vue 文件中
+
+// 自定义勾选框（部门树、成员选择共用）
+.perm-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 2px solid var(--system-border, var(--default-border));
+  border-radius: 5px;
+  transition: all 0.18s;
+
+  &.checked,
+  &.indeterminate {
+    background: var(--system-accent, var(--theme-color));
+    border-color: var(--system-accent, var(--theme-color));
+  }
+  &.sm {
+    width: 15px;
+    height: 15px;
+    border-radius: 4px;
+  }
+}

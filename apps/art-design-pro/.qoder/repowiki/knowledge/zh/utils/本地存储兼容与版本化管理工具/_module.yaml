@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: utils/storage_utils
+title: 本地存储兼容与版本化管理工具
+scope:
+    - src/utils/storage/
+source_files: []
+depends_on: []
+related_to: []

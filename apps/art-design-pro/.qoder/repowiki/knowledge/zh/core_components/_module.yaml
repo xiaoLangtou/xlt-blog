@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: core_components
+title: core_components
+scope:
+    - src/components/core/
+source_files: []
+depends_on: []
+related_to: []

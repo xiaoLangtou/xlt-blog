@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: utils/ui_utils
+title: UI 工具集（颜色、动画、加载、标签页、图标）
+scope:
+    - src/utils/ui/
+source_files: []
+depends_on: []
+related_to: []

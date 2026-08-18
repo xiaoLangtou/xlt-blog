@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: core_components/cards
+title: 核心卡片组件集合
+scope:
+    - src/components/core/cards/
+source_files: []
+depends_on: []
+related_to: []

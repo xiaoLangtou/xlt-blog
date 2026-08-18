@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文章列表 · 博客后台原型</title>
+<style>
+  :root {
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --primary-soft: #eef2ff;
+    --primary-soft-2: #e0e7ff;
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --surface-2: #fafbfc;
+    --border: #e6e8eb;
+    --border-strong: #d4d7db;
+    --text: #1f2329;
+    --text-secondary: #5c6470;
+    --text-muted: #9aa1ab;
+    --success: #16a34a;
+    --success-soft: #ecfdf3;
+    --success-border: #b7e6c8;
+    --muted: #8b919b;
+    --muted-soft: #f3f4f6;
+    --muted-border: #dfe1e4;
+    --danger: #dc2626;
+    --radius: 10px;
+    --radius-sm: 7px;
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04);
+    --shadow-md: 0 6px 20px rgba(16, 24, 40, 0.06);
+    --shadow-lg: 0 16px 40px rgba(16, 24, 40, 0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC",
+      "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 28px 60px;
+  }
+
+  /* ─── 页头 ─── */
+  .page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .page-head h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .page-head .sub {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .btn:hover { background: var(--surface-2); border-color: var(--border-strong); }
+  .btn svg { width: 15px; height: 15px; }
+  .btn--primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+  .btn--primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+
+  /* ─── 工具栏 ─── */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+  .search {
+    position: relative;
+    flex: 1 1 260px;
+    min-width: 200px;
+  }
+  .search svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    width: 15px;
+    height: 15px;
+    color: var(--text-muted);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  .search input {
+    width: 100%;
+    height: 36px;
+    padding: 0 12px 0 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .search input::placeholder { color: var(--text-muted); }
+  .search input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+    background: var(--surface);
+  }
+
+  .select {
+    height: 36px;
+    padding: 0 30px 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa1ab' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+
+  .spacer { flex: 1; }
+
+  /* 视图切换 */
+  .seg {
+    display: inline-flex;
+    padding: 3px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .seg button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .seg button svg { width: 14px; height: 14px; }
+  .seg button.is-active {
+    background: var(--surface);
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .count {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .count b { color: var(--text); font-weight: 600; }
+
+  /* ─── 表格视图 ─── */
+  .surface {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 860px; }
+  thead th {
+    position: sticky;
+    top: 0;
+    padding: 12px 16px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr { transition: background 0.12s ease; }
+  tbody tr:hover { background: #fafbfd; }
+
+  .cell-title { display: flex; align-items: center; gap: 12px; min-width: 260px; }
+  .thumb {
+    flex: 0 0 auto;
+    width: 46px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .title-text { font-weight: 600; color: var(--text); }
+  .title-text:hover { color: var(--primary); cursor: pointer; }
+  .title-meta { font-size: 12px; color: var(--text-muted); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .badge--published { background: var(--success-soft); color: var(--success); }
+  .badge--draft { background: var(--muted-soft); color: var(--muted); }
+
+  .cat {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .num { font-variant-numeric: tabular-nums; }
+  .muted { color: var(--text-muted); }
+
+  .row-actions { display: flex; align-items: center; gap: 4px; }
+  .link-btn {
+    padding: 4px 7px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .link-btn:hover { background: var(--primary-soft); }
+  .link-btn--danger { color: var(--danger); }
+  .link-btn--danger:hover { background: #fef2f2; }
+
+  /* ─── 卡片视图 ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-strong);
+  }
+  .card__cover {
+    position: relative;
+    height: 150px;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+    overflow: hidden;
+  }
+  .card__cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 30%, rgba(0, 0, 0, 0.28) 100%);
+  }
+  .card__cover .monogram {
+    position: absolute;
+    right: -14px;
+    bottom: -30px;
+    font-size: 110px;
+    font-weight: 800;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.20);
+    letter-spacing: -0.05em;
+    user-select: none;
+  }
+  .card__cover .badge { position: relative; z-index: 1; }
+  .card__body { display: flex; flex: 1; flex-direction: column; padding: 16px; }
+  .card__title {
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+  .card__title:hover { color: var(--primary); cursor: pointer; }
+  .card__summary {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .meta-dot { color: var(--border-strong); }
+  .card__foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ─── 空状态 / 分页 ─── */
+  .empty {
+    display: none;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .empty.is-show { display: block; }
+  .empty .icon { font-size: 40px; margin-bottom: 8px; }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .pagination .info { font-size: 13px; color: var(--text-muted); }
+  .pages { display: flex; align-items: center; gap: 4px; }
+  .page-btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+  .page-btn.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .page-btn:disabled { color: var(--muted); cursor: not-allowed; opacity: 0.6; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 720px) {
+    .page { padding: 20px 14px 40px; }
+    .page-head { flex-direction: column; align-items: flex-start; }
+    .toolbar { padding: 12px; }
+    .spacer { display: none; }
+    .card-grid { grid-template-columns: 1fr; }
+    .pagination { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 页头 -->
+  <div class="page-head">
+    <div>
+      <h1>文章列表</h1>
+      <div class="sub">管理博客文章 · 支持表格 / 卡片两种视图</div>
+    </div>
+    <button class="btn btn--primary" onclick="alert('原型：新建文章')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      新建文章
+    </button>
+  </div>
+
+  <!-- 工具栏 -->
+  <div class="toolbar">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="搜索文章标题、分类或标签…" oninput="render()">
+    </div>
+    <select class="select" id="statusFilter" onchange="render()">
+      <option value="all">全部状态</option>
+      <option value="published">已发布</option>
+      <option value="draft">草稿</option>
+    </select>
+    <select class="select" onchange="render()" id="categoryFilter">
+      <option value="all">全部分类</option>
+      <option value="前端">前端</option>
+      <option value="工程">工程</option>
+      <option value="读书">读书</option>
+      <option value="随笔">随笔</option>
+    </select>
+    <div class="spacer"></div>
+    <span class="count" id="countText"></span>
+    <div class="seg">
+      <button id="tableBtn" class="is-active" onclick="setView('table')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        表格
+      </button>
+      <button id="cardBtn" onclick="setView('card')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        卡片
+      </button>
+    </div>
+  </div>
+
+  <!-- 表格视图 -->
+  <div class="surface" id="tableView">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>标题</th>
+            <th>分类</th>
+            <th>状态</th>
+            <th style="text-align:right">浏览</th>
+            <th style="text-align:right">评论</th>
+            <th>更新时间</th>
+            <th style="text-align:right">操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="tableEmpty">
+      <div class="icon">📭</div>
+      <div>没有匹配的文章</div>
+    </div>
+    <div class="pagination">
+      <span class="info">共 <b id="totalText">0</b> 篇</span>
+      <div class="pages">
+        <button class="page-btn" disabled>‹</button>
+        <button class="page-btn is-active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn">›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 卡片视图 -->
+  <div id="cardView" class="hidden">
+    <div class="card-grid" id="cardGrid"></div>
+    <div class="empty" id="cardEmpty" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+      <div class="icon">📭</div>
+      <div>没有匹配的文章</div>
+    </div>
+    <div class="surface pagination" style="margin-top:16px">
+      <span class="info">共 <b id="cardTotalText">0</b> 篇</span>
+      <div class="pages">
+        <button class="page-btn" disabled>‹</button>
+        <button class="page-btn is-active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn">›</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const articles = [
+    { title: '用 Tiptap 打造优雅的富文本编辑器', category: '前端', status: 'published', views: 1284, comments: 12, time: '2026-08-15 16:40', summary: '从零搭建一个支持 Markdown、代码高亮、表格与图片拖拽的富文本编辑器，并分享工程化落地的踩坑经验。', tags: ['Vue3', 'Tiptap'], cover: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
+    { title: 'CSS 容器查询（Container Queries）实战笔记', category: '前端', status: 'published', views: 1531, comments: 23, time: '2026-08-12 10:15', summary: '告别媒体查询的粒度困境，用 @container 实现真正的组件级响应式，附卡片、表格等真实场景示例。', tags: ['CSS'], cover: 'linear-gradient(135deg,#0ea5e9,#22d3ee)' },
+    { title: '从零实现一个 Promise 并发调度器', category: '前端', status: 'draft', views: 0, comments: 0, time: '2026-08-14 22:08', summary: '手写一个带并发上限的 p-limit，理解任务队列、调度与取消机制，并分析其在请求合并中的价值。', tags: ['JavaScript'], cover: 'linear-gradient(135deg,#f59e0b,#fbbf24)' },
+    { title: '如何设计一套可维护的组件库', category: '工程', status: 'published', views: 876, comments: 9, time: '2026-08-09 09:30', summary: '从目录结构、API 设计到文档与发布流程，梳理一套小型团队也能长期维护的组件库实践。', tags: ['工程化'], cover: 'linear-gradient(135deg,#10b981,#34d399)' },
+    { title: '读《禅与摩托车维修艺术》有感', category: '读书', status: 'published', views: 742, comments: 15, time: '2026-08-05 20:12', summary: '良质（Quality）并非玄学，它关乎我们与技术、与自我的相处方式。一次关于“修理”的哲学漫谈。', tags: ['读书笔记'], cover: 'linear-gradient(135deg,#ef4444,#f97316)' },
+    { title: '秋日苏州行记', category: '随笔', status: 'published', views: 433, comments: 5, time: '2026-07-28 14:55', summary: '拙政园的雨、平江路的夜色，和一碗头汤面。在江南的秋意里，把日子过慢一点。', tags: ['旅行'], cover: 'linear-gradient(135deg,#14b8a6,#2dd4bf)' },
+    { title: '我的 2026 年博客写作计划', category: '随笔', status: 'draft', views: 0, comments: 0, time: '2026-08-13 11:20', summary: '列出未来一年想写的选题，从技术长文到生活随笔，给持续输出一个可执行的节奏。', tags: ['年度计划'], cover: 'linear-gradient(135deg,#64748b,#94a3b8)' },
+    { title: 'Vue3 组合式 API 的工程化实践', category: '前端', status: 'published', views: 964, comments: 8, time: '2026-07-21 17:45', summary: '如何把 setup 语法糖、类型推导与可复用 composable 组织成清晰、可测试的业务代码。', tags: ['Vue3'], cover: 'linear-gradient(135deg,#06b6d4,#3b82f6)' }
+  ];
+
+  const el = (id) => document.getElementById(id);
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function statusBadge(s) {
+    return s === 'published'
+      ? '<span class="badge badge--published">已发布</span>'
+      : '<span class="badge badge--draft">草稿</span>';
+  }
+
+  function filtered() {
+    const kw = el('searchInput').value.trim().toLowerCase();
+    const st = el('statusFilter').value;
+    const cat = el('categoryFilter').value;
+    return articles.filter((a) => {
+      if (st !== 'all' && a.status !== st) return false;
+      if (cat !== 'all' && a.category !== cat) return false;
+      if (kw) {
+        const hay = (a.title + a.category + a.tags.join('')).toLowerCase();
+        if (!hay.includes(kw)) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderTable(list) {
+    el('tableBody').innerHTML = list.map((a) => `
+      <tr>
+        <td>
+          <div class="cell-title">
+            <span class="thumb" style="background:${a.cover}">${esc(a.title[0])}</span>
+            <div>
+              <div class="title-text">${esc(a.title)}</div>
+              <div class="title-meta">${esc(a.tags.join(' · '))}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="cat">${esc(a.category)}</span></td>
+        <td>${statusBadge(a.status)}</td>
+        <td class="num" style="text-align:right">${a.views ? a.views.toLocaleString() : '—'}</td>
+        <td class="num" style="text-align:right">${a.comments || '—'}</td>
+        <td class="muted">${esc(a.time)}</td>
+        <td style="text-align:right">
+          <div class="row-actions" style="justify-content:flex-end">
+            <button class="link-btn">编辑</button>
+            <button class="link-btn">${a.status === 'published' ? '转草稿' : '发布'}</button>
+            <button class="link-btn link-btn--danger">删除</button>
+          </div>
+        </td>
+      </tr>`).join('');
+    el('tableEmpty').classList.toggle('is-show', list.length === 0);
+    el('tableBody').style.display = list.length ? '' : 'none';
+  }
+
+  function renderCard(list) {
+    el('cardGrid').innerHTML = list.map((a) => `
+      <div class="card">
+        <div class="card__cover" style="background:${a.cover}">
+          <span class="monogram">${esc(a.title[0])}</span>
+          ${statusBadge(a.status)}
+        </div>
+        <div class="card__body">
+          <div class="card__title">${esc(a.title)}</div>
+          <div class="card__summary">${esc(a.summary)}</div>
+          <div class="card__meta">
+            <span class="cat">${esc(a.category)}</span>
+            <span>👁 ${a.views ? a.views.toLocaleString() : '—'}</span>
+            <span>💬 ${a.comments || '—'}</span>
+            <span class="meta-dot">·</span>
+            <span>${esc(a.time)}</span>
+          </div>
+          <div class="card__foot">
+            <button class="btn" style="height:30px;padding:0 12px;font-size:12px">编辑</button>
+            <button class="btn" style="height:30px;padding:0 12px;font-size:12px">${a.status === 'published' ? '转草稿' : '发布'}</button>
+            <span style="flex:1"></span>
+            <button class="link-btn link-btn--danger">删除</button>
+          </div>
+        </div>
+      </div>`).join('');
+    el('cardEmpty').classList.toggle('is-show', list.length === 0);
+    el('cardGrid').style.display = list.length ? '' : 'none';
+  }
+
+  let view = 'table';
+  function setView(v) {
+    view = v;
+    el('tableBtn').classList.toggle('is-active', v === 'table');
+    el('cardBtn').classList.toggle('is-active', v === 'card');
+    el('tableView').classList.toggle('hidden', v !== 'table');
+    el('cardView').classList.toggle('hidden', v !== 'card');
+  }
+
+  function render() {
+    const list = filtered();
+    renderTable(list);
+    renderCard(list);
+    el('countText').innerHTML = `<b>${list.length}</b> 篇`;
+    el('totalText').textContent = articles.length;
+    el('cardTotalText').textContent = articles.length;
+  }
+
+  render();
+</script>
+</body>
+</html>

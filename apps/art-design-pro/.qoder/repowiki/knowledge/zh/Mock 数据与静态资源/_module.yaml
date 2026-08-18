@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: mock_data
+title: Mock 数据与静态资源
+scope:
+    - src/mock/
+source_files: []
+depends_on: []
+related_to: []

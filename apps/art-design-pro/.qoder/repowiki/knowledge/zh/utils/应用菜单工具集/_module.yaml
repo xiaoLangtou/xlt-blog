@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: utils/menu_utils
+title: 应用菜单工具集
+scope:
+    - src/utils/menu/
+source_files: []
+depends_on: []
+related_to: []

@@ -1,0 +1,188 @@
+// 菜单管理页面 — 整体布局、面板容器、搜索、空状态
+.menu-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+
+  &__layout {
+    display: flex;
+    flex: 1;
+    gap: 16px;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+.menu-tree-panel,
+.menu-detail-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--system-card, var(--default-box-color));
+  border: 1px solid var(--system-border-subtle, var(--default-border));
+  border-radius: calc(var(--custom-radius) / 2 + 4px);
+  animation: menu-panel-fade-in 0.4s ease forwards;
+}
+
+.menu-detail-panel {
+  animation-delay: 0.08s;
+}
+
+.menu-tree-panel {
+  width: 380px;
+  flex-shrink: 0;
+}
+
+.menu-detail-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.menu-panel-header {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--system-border-subtle, var(--default-border));
+}
+
+.menu-panel-title {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--system-text, var(--art-gray-900));
+
+  .menu-panel-count {
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--system-muted, var(--art-gray-600));
+    background: var(--system-elevated, var(--art-gray-200));
+    border-radius: 10px;
+  }
+}
+
+.menu-panel-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+// 搜索区域
+.menu-tree-search {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--system-border-subtle, var(--default-border));
+}
+
+.menu-search-wrap {
+  position: relative;
+
+  .menu-search-icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    color: var(--system-muted, var(--art-gray-600));
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  .el-input__wrapper {
+    padding-left: 28px;
+    background: var(--system-input, var(--default-box-color));
+    border-radius: 6px;
+    box-shadow: 0 0 0 1px var(--system-border-subtle, var(--default-border)) inset;
+  }
+
+  .el-input__wrapper.is-focus {
+    box-shadow:
+      0 0 0 1px var(--system-accent, var(--theme-color)) inset,
+      0 0 0 3px var(--system-accent-soft, color-mix(in srgb, var(--theme-color) 12%, transparent));
+  }
+}
+
+// 菜单树容器
+.menu-tree-body {
+  flex: 1;
+  padding: 8px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--system-border, var(--default-border));
+    border-radius: 4px;
+  }
+}
+
+// 详情面板空状态
+.menu-detail-empty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  color: var(--system-muted, var(--art-gray-600));
+
+  .menu-detail-empty-icon {
+    opacity: 0.3;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
+}
+
+// 共享工具类：代码标签（被 detail-panel 和 button-config-table 使用）
+.menu-code {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 2px 8px;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--system-accent, var(--theme-color));
+  word-break: break-all;
+  background: var(--system-accent-soft, color-mix(in srgb, var(--theme-color) 10%, transparent));
+  border-radius: 4px;
+}
+
+// 入场动画
+@keyframes menu-panel-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 响应式 — 小屏上下布局
+@media (max-width: 960px) {
+  .menu-page__layout {
+    flex-direction: column;
+  }
+
+  .menu-tree-panel {
+    width: 100%;
+    max-height: 42vh;
+  }
+}

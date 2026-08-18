@@ -1,0 +1,30 @@
+{
+  "name": "xlt-blog",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.10.0",
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:server": "pnpm --filter @xlt-blog/server dev",
+    "dev:console": "pnpm --filter art-design-pro dev",
+    "dev:admin": "pnpm run dev:console",
+    "dev:web": "pnpm --filter @xlt-blog/web dev",
+    "build": "pnpm --filter \"./packages/*\" build && pnpm --filter \"./apps/*\" build",
+    "build:console": "pnpm --filter art-design-pro build",
+    "build:admin": "pnpm run build:console",
+    "lint:console": "pnpm --filter art-design-pro lint",
+    "lint:admin": "pnpm run lint:console",
+    "db:up": "docker compose up -d mysql",
+    "db:migrate": "pnpm --filter @xlt-blog/server migration:up",
+    "db:seed": "pnpm --filter @xlt-blog/server seed"
+  },
+  "devDependencies": {
+    "@unocss/core": "catalog:",
+    "@unocss/eslint-plugin": "catalog:",
+    "unocss": "catalog:",
+    "unocss-preset-animations": "catalog:"
+  }
+}

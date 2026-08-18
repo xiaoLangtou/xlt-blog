@@ -1,0 +1,159 @@
+// 菜单树节点 — 行、图标、标签、操作按钮
+.menu-tree-node {
+  user-select: none;
+}
+
+.menu-tree-node__row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--system-hover, var(--art-hover-color));
+
+    .menu-node-actions {
+      opacity: 1;
+    }
+  }
+
+  &.is-selected {
+    background: var(--system-accent-soft, color-mix(in srgb, var(--theme-color) 12%, transparent));
+
+    .menu-node-label {
+      color: var(--system-accent, var(--theme-color));
+    }
+
+    .menu-node-icon {
+      color: var(--system-accent, var(--theme-color));
+    }
+  }
+
+  &.is-dimmed {
+    opacity: 0.25;
+  }
+}
+
+.menu-node-toggle {
+  display: inline-flex;
+  flex: 0 0 18px;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: var(--system-muted, var(--art-gray-600));
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &.is-expanded {
+    transform: rotate(90deg);
+  }
+
+  &.is-hidden {
+    visibility: hidden;
+  }
+}
+
+.menu-node-icon {
+  display: inline-flex;
+  flex: 0 0 18px;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: var(--system-muted, var(--art-gray-600));
+
+  svg,
+  .art-svg-icon {
+    display: block;
+  }
+}
+
+.menu-node-tag {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 16px;
+  border-radius: 4px;
+
+  &.is-dir {
+    color: var(--system-blue, var(--art-info));
+    background: var(--system-blue-soft, color-mix(in srgb, var(--art-info) 12%, transparent));
+  }
+
+  &.is-menu {
+    color: var(--system-green, var(--art-success));
+    background: var(--system-green-soft, color-mix(in srgb, var(--art-success) 12%, transparent));
+  }
+
+  &.is-btn {
+    color: var(--system-accent, var(--theme-color));
+    background: var(--system-accent-soft, color-mix(in srgb, var(--theme-color) 12%, transparent));
+  }
+
+  &.is-hidden {
+    color: var(--system-red, var(--art-danger));
+    background: var(--system-red-soft, color-mix(in srgb, var(--art-danger) 12%, transparent));
+  }
+}
+
+.menu-node-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-node-meta {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 4px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.menu-node-actions {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 2px;
+  align-items: center;
+  justify-content: flex-end;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.menu-node-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: var(--system-muted, var(--art-gray-600));
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  transition: all 0.15s;
+
+  &:hover {
+    color: var(--system-text, var(--art-gray-900));
+    background: var(--system-elevated, var(--art-gray-200));
+  }
+
+  &.is-danger:hover {
+    color: var(--system-red, var(--art-danger));
+    background: var(--system-red-soft, color-mix(in srgb, var(--art-danger) 12%, transparent));
+  }
+}
+
+.menu-tree-children {
+  padding-left: 22px;
+}

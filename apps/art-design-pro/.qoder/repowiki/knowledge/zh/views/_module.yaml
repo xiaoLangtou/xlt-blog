@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: views
+title: views
+scope:
+    - src/views/
+source_files: []
+depends_on: []
+related_to: []

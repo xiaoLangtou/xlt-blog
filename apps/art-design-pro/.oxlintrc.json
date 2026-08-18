@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "globals": {
+    "Api": "readonly"
+  },
+  "rules": {
+    "no-var": "error",
+    "typescript/no-explicit-any": "off",
+    "no-unexpected-multiline": "error"
+  },
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "public",
+    ".vscode/**",
+    "src/assets/**",
+    "src/utils/console.ts"
+  ]
+}

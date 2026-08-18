@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: core_components/charts
+title: ECharts 图表组件集合（Art Charts）
+scope:
+    - src/components/core/charts/
+source_files: []
+depends_on: []
+related_to: []

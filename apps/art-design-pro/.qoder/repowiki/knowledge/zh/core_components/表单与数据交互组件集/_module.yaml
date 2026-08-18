@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: core_components/forms
+title: 表单与数据交互组件集
+scope:
+    - src/components/core/forms/
+source_files: []
+depends_on: []
+related_to: []

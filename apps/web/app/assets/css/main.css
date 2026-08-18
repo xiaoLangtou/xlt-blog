@@ -1,0 +1,284 @@
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+/* ---- 设计 token：黛蓝主色板 + 朱砂点缀 + 字体角色 ---- */
+@theme static {
+  /* 黛蓝（dai）：参考 art-design-pro 主题蓝，作为 primary 色板 */
+  --color-dai-50: #f0f5ff;
+  --color-dai-100: #e0eaff;
+  --color-dai-200: #c2d5fb;
+  --color-dai-300: #97b6f5;
+  --color-dai-400: #6690ee;
+  --color-dai-500: #3e6ee8;
+  --color-dai-600: #2255e0;
+  --color-dai-700: #1b43b8;
+  --color-dai-800: #1a3a92;
+  --color-dai-900: #1a3374;
+  --color-dai-950: #122045;
+
+  /* 朱砂：只用于印章与极少数强调 */
+  --color-cinnabar: #c23b36;
+
+  /* 标题衬线：宋体系（系统字体栈，无需联网） */
+  --font-display:
+    'Georgia', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', 'SimSun', serif;
+}
+
+/* ---- 全局基调 ---- */
+:root {
+  /* 纸面：极淡的暖白，不到米色的程度 */
+  --ui-bg: #fdfdfc;
+  --ui-radius: 0.25rem;
+}
+
+.dark {
+  /* 青黑，不用纯黑 */
+  --ui-bg: #16181d;
+}
+
+/* 纸张肌理：极淡的噴墨噪点，让底色不再是平面 */
+body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+.dark body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06' fill='white'/%3E%3C/svg%3E");
+}
+
+/* 双线书框：装帧感的内外双描边 */
+.book-frame {
+  border: 1px solid color-mix(in oklab, var(--ui-color-primary-400) 45%, var(--ui-border));
+  outline: 1px solid color-mix(in oklab, var(--ui-color-primary-400) 25%, transparent);
+  outline-offset: 3px;
+}
+
+/* 目录点线：书籍目录页的 dot leader */
+.dot-leader {
+  flex: 1;
+  min-width: 1.5rem;
+  border-bottom: 1px dotted var(--ui-border-accented);
+  margin: 0 0.5em;
+  transform: translateY(-0.3em);
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-cinnabar) 18%, transparent);
+}
+
+/* 竖排文字（首页刊头 slogan） */
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.45em;
+}
+
+/* 朱砂小方印 */
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-cinnabar);
+  color: #fff;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  padding: 0.5rem 0.35rem;
+  border-radius: 3px;
+  user-select: none;
+}
+
+/* 页面切换：轻微上浮淡入 */
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.page-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active {
+    transition: none;
+  }
+}
+
+/* Markdown 正文排版：文章详情与独立页面共用 */
+.markdown-body {
+  line-height: 1.9;
+  color: var(--ui-text);
+  font-size: 1.0625rem;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ui-text-highlighted);
+  margin: 2em 0 0.8em;
+}
+.markdown-body h1 {
+  font-size: 1.5em;
+}
+.markdown-body h2 {
+  font-size: 1.3em;
+  padding-left: 0.6em;
+  border-left: 3px solid var(--color-cinnabar);
+}
+.markdown-body h3 {
+  font-size: 1.15em;
+}
+.markdown-body p {
+  margin: 1.1em 0;
+}
+.markdown-body a {
+  color: var(--ui-primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--ui-primary) 40%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
+}
+.markdown-body a:hover {
+  text-decoration-color: var(--ui-primary);
+}
+/* 安全内联 HTML：高亮/下划线/上下标（高亮颜色由行内 style 覆盖，此处为兜底底色与可读文字色） */
+.markdown-body mark {
+  padding: 0 0.15em;
+  border-radius: 3px;
+  background-color: #fff1a8;
+  color: #1f2937;
+}
+.markdown-body u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.markdown-body sub {
+  font-size: 0.8em;
+  vertical-align: sub;
+}
+.markdown-body sup {
+  font-size: 0.8em;
+  vertical-align: super;
+}
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+.markdown-body ul {
+  list-style: disc;
+}
+.markdown-body ol {
+  list-style: decimal;
+}
+.markdown-body li {
+  margin: 0.4em 0;
+}
+.markdown-body li::marker {
+  color: var(--ui-text-dimmed);
+}
+.markdown-body blockquote {
+  border-left: 2px solid var(--color-cinnabar);
+  padding: 0.1em 0 0.1em 1.1em;
+  color: var(--ui-text-muted);
+  font-family: var(--font-display);
+  margin: 1.4em 0;
+}
+.markdown-body code {
+  font-family: var(--font-mono, ui-monospace), SFMono-Regular, monospace;
+  font-size: 0.875em;
+}
+.markdown-body :not(pre) > code {
+  background: var(--ui-bg-elevated);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+.markdown-body pre {
+  border-radius: 6px;
+  padding: 1.1em 1.25em;
+  overflow-x: auto;
+  margin: 1.5em 0;
+  border: 1px solid var(--ui-border);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+.markdown-body img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5em auto;
+  border-radius: 4px;
+  border: 1px solid var(--ui-border);
+}
+.markdown-body table {
+  display: block;
+  width: 100%;
+  margin: 1.5em 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+.markdown-body table th,
+.markdown-body table td {
+  min-width: 7rem;
+}
+.markdown-body table[data-fit='content'] {
+  width: max-content;
+}
+.markdown-body th[data-align='center'],
+.markdown-body td[data-align='center'] {
+  text-align: center;
+}
+.markdown-body th[data-align='right'],
+.markdown-body td[data-align='right'] {
+  text-align: right;
+}
+.markdown-body th[data-background='neutral'],
+.markdown-body td[data-background='neutral'] {
+  background: color-mix(in oklab, var(--ui-bg-elevated) 75%, var(--ui-border));
+}
+.markdown-body th[data-background='amber'],
+.markdown-body td[data-background='amber'] {
+  background: color-mix(in oklab, #f59e0b 16%, var(--ui-bg));
+}
+.markdown-body th[data-background='blue'],
+.markdown-body td[data-background='blue'] {
+  background: color-mix(in oklab, #3b82f6 14%, var(--ui-bg));
+}
+.markdown-body th {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--ui-border);
+  padding: 0.5em 0.75em;
+}
+.markdown-body hr {
+  border: none;
+  text-align: center;
+  margin: 2.5em 0;
+}
+.markdown-body hr::after {
+  content: '※';
+  color: var(--ui-text-dimmed);
+  font-size: 0.875rem;
+}
+/* shiki 双主题：暗色模式切换 */
+.dark .markdown-body .shiki,
+.dark .markdown-body .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}

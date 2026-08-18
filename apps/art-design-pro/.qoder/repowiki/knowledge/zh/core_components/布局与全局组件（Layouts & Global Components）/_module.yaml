@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: core_components/layouts
+title: 布局与全局组件（Layouts & Global Components）
+scope:
+    - src/components/core/layouts/
+source_files: []
+depends_on: []
+related_to: []

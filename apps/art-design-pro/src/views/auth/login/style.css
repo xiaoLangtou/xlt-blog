@@ -1,0 +1,51 @@
+@reference '@styles/core/tailwind.css';
+
+/* 授权页右侧区域 */
+.auth-right-wrap {
+  @apply w-full max-w-[420px]
+    animate-[slideInRight_0.6s_cubic-bezier(0.25,0.46,0.45,0.94)_forwards]
+    max-md:animate-none;
+
+  .form {
+    @apply py-2;
+  }
+
+  .title {
+    @apply text-g-900 text-2xl font-bold max-md:text-xl;
+  }
+
+  .sub-title {
+    @apply mt-2 text-g-500 text-sm;
+  }
+
+  .custom-height {
+    @apply !h-[40px];
+  }
+
+  .login-btn {
+    @apply shadow-lg font-semibold;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--el-color-primary) 30%, transparent);
+  }
+
+  /* 消除 ElFormItem 自带的底部间距，由 space-y 统一控制 */
+  .form-fields {
+    @apply space-y-4 mt-2;
+
+    :deep(.el-form-item) {
+      @apply mb-0;
+    }
+  }
+}
+
+/* 滑入动画 */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

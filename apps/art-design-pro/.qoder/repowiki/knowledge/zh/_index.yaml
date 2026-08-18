@@ -1,0 +1,420 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: zh-CN
+branch: master
+nodes_managed: true
+exported_at: "2026-07-25T14:58:24Z"
+modules:
+    api_layer:
+        dir_name: 前端 API 接口层
+        title: 前端 API 接口层
+        scope:
+            - src/api/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    assets:
+        dir_name: 静态资源与样式主题系统
+        title: 静态资源与样式主题系统
+        scope:
+            - src/assets/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    config:
+        dir_name: 系统全局配置与设置中心
+        title: 系统全局配置与设置中心
+        scope:
+            - src/config/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_components:
+        dir_name: core_components
+        title: core_components
+        scope:
+            - src/components/core/
+        source_files: []
+        children:
+            - core_components/base_components
+            - core_components/cards
+            - core_components/charts
+            - core_components/forms
+            - core_components/layouts
+            - core_components/others_and_widget
+            - core_components/search_and_org
+            - core_components/tables
+            - core_components/text_effects
+            - core_components/views
+        depends_on: []
+        related_to: []
+    core_components/base_components:
+        dir_name: 基础 UI 组件库（Art 系列）
+        title: 基础 UI 组件库（Art 系列）
+        scope:
+            - src/components/core/base/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_components/cards:
+        dir_name: 核心卡片组件集合
+        title: 核心卡片组件集合
+        scope:
+            - src/components/core/cards/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_components/charts:
+        dir_name: ECharts 图表组件集合（Art Charts）
+        title: ECharts 图表组件集合（Art Charts）
+        scope:
+            - src/components/core/charts/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_components/forms:
+        dir_name: 表单与数据交互组件集
+        title: 表单与数据交互组件集
+        scope:
+            - src/components/core/forms/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_components/layouts:
+        dir_name: 布局与全局组件（Layouts & Global Components）
+        title: 布局与全局组件（Layouts & Global Components）
+        scope:
+            - src/components/core/layouts/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_components/others_and_widget:
+        dir_name: 辅助组件与通用 Widget
+        title: 辅助组件与通用 Widget
+        scope:
+            - src/components/core/others/
+            - src/components/core/widget/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_components/search_and_org:
+        dir_name: 搜索与组织架构选择组件
+        title: 搜索与组织架构选择组件
+        scope:
+            - src/components/core/search/
+            - src/components/core/org-selector/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_components/tables:
+        dir_name: ArtTable 表格组件与表头工具栏
+        title: ArtTable 表格组件与表头工具栏
+        scope:
+            - src/components/core/tables/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_components/text_effects:
+        dir_name: 文本动效组件集（数字滚动、文字滚动、节日横幅）
+        title: 文本动效组件集（数字滚动、文字滚动、节日横幅）
+        scope:
+            - src/components/core/text-effect/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    core_components/views:
+        dir_name: 核心页面视图组件（异常、登录、结果页）
+        title: 核心页面视图组件（异常、登录、结果页）
+        scope:
+            - src/components/core/views/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    directives:
+        dir_name: Vue 全局指令集（权限、角色、代码高亮、水波纹）
+        title: Vue 全局指令集（权限、角色、代码高亮、水波纹）
+        scope:
+            - src/directives/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    entry_point:
+        dir_name: 应用入口与根组件
+        title: 应用入口与根组件
+        scope:
+            - src/App.vue
+            - src/main.ts
+            - src/env.d.ts
+            - index.html
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    hooks:
+        dir_name: Vue 组合式 Hook 库（核心业务与 TanStack Query 数据层）
+        title: Vue 组合式 Hook 库（核心业务与 TanStack Query 数据层）
+        scope:
+            - src/hooks/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    locales:
+        dir_name: 国际化（i18n）多语言支持模块
+        title: 国际化（i18n）多语言支持模块
+        scope:
+            - src/locales/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    mock_data:
+        dir_name: Mock 数据与静态资源
+        title: Mock 数据与静态资源
+        scope:
+            - src/mock/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    plugins:
+        dir_name: 第三方库插件封装
+        title: 第三方库插件封装
+        scope:
+            - src/plugins/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    router:
+        dir_name: Vue Router 路由与权限控制系统
+        title: Vue Router 路由与权限控制系统
+        scope:
+            - src/router/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    store:
+        dir_name: Pinia 全局状态管理模块
+        title: Pinia 全局状态管理模块
+        scope:
+            - src/store/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    types:
+        dir_name: 全局类型定义中心
+        title: 全局类型定义中心
+        scope:
+            - src/types/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    utils:
+        dir_name: utils
+        title: utils
+        scope:
+            - src/utils/
+        source_files: []
+        children:
+            - utils/crypto_utils
+            - utils/form_utils
+            - utils/http_utils
+            - utils/menu_utils
+            - utils/navigation_utils
+            - utils/query_utils
+            - utils/storage_utils
+            - utils/sys_utils
+            - utils/table_utils
+            - utils/ui_utils
+        depends_on: []
+        related_to: []
+    utils/crypto_utils:
+        dir_name: 加密工具与常量配置
+        title: 加密工具与常量配置
+        scope:
+            - src/utils/crypto/
+            - src/utils/constants/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    utils/form_utils:
+        dir_name: 表单工具集（验证与响应式布局）
+        title: 表单工具集（验证与响应式布局）
+        scope:
+            - src/utils/form/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    utils/http_utils:
+        dir_name: HTTP 请求封装与错误处理
+        title: HTTP 请求封装与错误处理
+        scope:
+            - src/utils/http/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    utils/menu_utils:
+        dir_name: 应用菜单工具集
+        title: 应用菜单工具集
+        scope:
+            - src/utils/menu/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    utils/navigation_utils:
+        dir_name: 导航与路由工具模块
+        title: 导航与路由工具模块
+        scope:
+            - src/utils/navigation/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    utils/query_utils:
+        dir_name: TanStack Query 客户端与查询键管理
+        title: TanStack Query 客户端与查询键管理
+        scope:
+            - src/utils/query/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    utils/storage_utils:
+        dir_name: 本地存储兼容与版本化管理工具
+        title: 本地存储兼容与版本化管理工具
+        scope:
+            - src/utils/storage/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    utils/sys_utils:
+        dir_name: 系统工具与基础设施（控制台、错误处理、事件总线、版本升级）
+        title: 系统工具与基础设施（控制台、错误处理、事件总线、版本升级）
+        scope:
+            - src/utils/sys/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    utils/table_utils:
+        dir_name: 表格工具与缓存模块
+        title: 表格工具与缓存模块
+        scope:
+            - src/utils/table/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    utils/ui_utils:
+        dir_name: UI 工具集（颜色、动画、加载、标签页、图标）
+        title: UI 工具集（颜色、动画、加载、标签页、图标）
+        scope:
+            - src/utils/ui/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    views:
+        dir_name: views
+        title: views
+        scope:
+            - src/views/
+        source_files: []
+        children:
+            - views/auth
+            - views/daemon
+            - views/dashboard_console
+            - views/exception_result
+            - views/gen
+            - views/outside_index
+            - views/system
+        depends_on: []
+        related_to: []
+    views/auth:
+        dir_name: 认证视图（登录_注册_忘记密码）
+        title: 认证视图（登录/注册/忘记密码）
+        scope:
+            - src/views/auth/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    views/daemon:
+        dir_name: 守护进程监控视图（缓存、任务与日志）
+        title: 守护进程监控视图（缓存、任务与日志）
+        scope:
+            - src/views/daemon/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    views/dashboard_console:
+        dir_name: 控制台工作台视图
+        title: 控制台工作台视图
+        scope:
+            - src/views/dashboard/console/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    views/exception_result:
+        dir_name: 异常与结果展示页面
+        title: 异常与结果展示页面
+        scope:
+            - src/views/exception/
+            - src/views/result/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    views/gen:
+        dir_name: 代码生成器视图模块
+        title: 代码生成器视图模块
+        scope:
+            - src/views/gen/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    views/outside_index:
+        dir_name: 应用布局与外部页面视图
+        title: 应用布局与外部页面视图
+        scope:
+            - src/views/outside/
+            - src/views/index/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    views/system:
+        dir_name: 系统管理视图模块
+        title: 系统管理视图模块
+        scope:
+            - src/views/system/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []

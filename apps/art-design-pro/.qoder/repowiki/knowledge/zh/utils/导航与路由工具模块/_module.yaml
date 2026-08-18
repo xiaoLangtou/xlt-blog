@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: utils/navigation_utils
+title: 导航与路由工具模块
+scope:
+    - src/utils/navigation/
+source_files: []
+depends_on: []
+related_to: []

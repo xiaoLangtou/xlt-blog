@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: core_components/views
+title: 核心页面视图组件（异常、登录、结果页）
+scope:
+    - src/components/core/views/
+source_files: []
+depends_on: []
+related_to: []

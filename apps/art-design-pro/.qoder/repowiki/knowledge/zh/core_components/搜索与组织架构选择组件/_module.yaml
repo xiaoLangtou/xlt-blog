@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: core_components/search_and_org
+title: 搜索与组织架构选择组件
+scope:
+    - src/components/core/search/
+    - src/components/core/org-selector/
+source_files: []
+depends_on: []
+related_to: []

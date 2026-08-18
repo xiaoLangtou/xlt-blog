@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: core_components/base_components
+title: 基础 UI 组件库（Art 系列）
+scope:
+    - src/components/core/base/
+source_files: []
+depends_on: []
+related_to: []

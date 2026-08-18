@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: assets
+title: 静态资源与样式主题系统
+scope:
+    - src/assets/
+source_files: []
+depends_on: []
+related_to: []

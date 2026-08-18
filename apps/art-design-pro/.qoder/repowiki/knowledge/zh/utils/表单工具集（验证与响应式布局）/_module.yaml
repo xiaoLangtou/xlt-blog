@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: utils/form_utils
+title: 表单工具集（验证与响应式布局）
+scope:
+    - src/utils/form/
+source_files: []
+depends_on: []
+related_to: []

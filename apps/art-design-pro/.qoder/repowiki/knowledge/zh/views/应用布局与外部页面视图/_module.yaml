@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: views/outside_index
+title: 应用布局与外部页面视图
+scope:
+    - src/views/outside/
+    - src/views/index/
+source_files: []
+depends_on: []
+related_to: []

@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: views/auth
+title: 认证视图（登录/注册/忘记密码）
+scope:
+    - src/views/auth/
+source_files: []
+depends_on: []
+related_to: []

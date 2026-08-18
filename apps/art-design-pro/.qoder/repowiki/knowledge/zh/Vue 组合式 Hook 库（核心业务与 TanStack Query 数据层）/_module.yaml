@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: hooks
+title: Vue 组合式 Hook 库（核心业务与 TanStack Query 数据层）
+scope:
+    - src/hooks/
+source_files: []
+depends_on: []
+related_to: []

@@ -1,0 +1,427 @@
+{
+  "httpMsg": {
+    "unauthorized": "未授权访问，请重新登录",
+    "forbidden": "禁止访问该资源",
+    "notFound": "请求的资源不存在",
+    "methodNotAllowed": "请求方法不允许",
+    "requestTimeout": "请求超时，请稍后重试",
+    "internalServerError": "服务器内部错误，请稍后重试",
+    "badGateway": "网关错误，请稍后重试",
+    "serviceUnavailable": "服务暂时不可用，请稍后重试",
+    "gatewayTimeout": "网关超时，请稍后重试",
+    "requestCancelled": "请求已取消",
+    "networkError": "网络连接异常，请检查网络连接",
+    "requestFailed": "请求失败",
+    "requestConfigError": "请求配置错误"
+  },
+  "topBar": {
+    "search": {
+      "title": "搜索"
+    },
+    "user": {
+      "userCenter": "个人中心",
+      "docs": "使用文档",
+      "github": "Github",
+      "lockScreen": "锁定屏幕",
+      "logout": "退出登录"
+    },
+    "guide": {
+      "title": "点击这里查看",
+      "theme": "主题风格",
+      "menu": "开启顶栏菜单",
+      "description": "等更多配置"
+    }
+  },
+  "common": {
+    "tips": "提示",
+    "cancel": "取消",
+    "confirm": "确定",
+    "logOutTips": "您是否要退出登录?"
+  },
+  "search": {
+    "placeholder": "搜索页面",
+    "historyTitle": "搜索历史",
+    "switchKeydown": "切换",
+    "selectKeydown": "选择",
+    "exitKeydown": "关闭"
+  },
+  "setting": {
+    "panel": {
+      "title": "偏好设置",
+      "subtitle": "自定义系统外观、布局与功能",
+      "group": "系统",
+      "close": "关闭"
+    },
+    "tabs": {
+      "appearance": {
+        "title": "主题外观",
+        "desc": "设置系统的视觉风格与色彩主题"
+      },
+      "menu": {
+        "title": "菜单导航",
+        "desc": "配置侧边栏布局方式与菜单样式"
+      },
+      "interface": {
+        "title": "界面容器",
+        "desc": "调整页面容器、标签栏与切换动画"
+      },
+      "features": {
+        "title": "功能开关",
+        "desc": "开启或关闭各项界面功能"
+      }
+    },
+    "cards": {
+      "themeStyle": {
+        "title": "主题风格",
+        "desc": "选择界面的明暗模式，或跟随系统自动切换"
+      },
+      "themeColor": {
+        "desc": "主题色将应用于按钮、链接、选中状态等交互元素"
+      },
+      "borderRadius": {
+        "title": "界面圆角",
+        "desc": "调整卡片、按钮、输入框等组件的圆角大小"
+      },
+      "menuLayout": {
+        "desc": "选择侧边栏与顶部导航的排列方式"
+      },
+      "menuStyle": {
+        "desc": "控制侧边栏的配色与外观表现"
+      },
+      "menuWidth": {
+        "title": "菜单宽度",
+        "desc": "调整侧边栏的展开宽度，适配不同屏幕尺寸"
+      },
+      "boxStyle": {
+        "desc": "选择卡片和面板的视觉区分方式"
+      },
+      "containerWidth": {
+        "desc": "控制页面主内容区域的最大宽度"
+      },
+      "tabStyle": {
+        "title": "标签页风格",
+        "desc": "设置多标签导航栏的外观样式"
+      },
+      "pageTransition": {
+        "title": "页面切换动画",
+        "desc": "路由切换时的过渡动画效果"
+      },
+      "navLayout": {
+        "title": "导航与布局",
+        "desc": "控制导航栏和侧边栏相关功能的显示"
+      },
+      "toolbar": {
+        "title": "工具栏功能",
+        "desc": "控制顶部工具栏的快捷功能入口"
+      },
+      "display": {
+        "title": "显示与视觉",
+        "desc": "控制内容区域的特殊显示效果"
+      }
+    },
+    "rows": {
+      "displayMode": {
+        "label": "显示模式",
+        "desc": "浅色模式适合明亮环境，深色模式减少夜间眼部疲劳"
+      },
+      "pickColor": {
+        "label": "选择颜色",
+        "desc": "选择一个与你品牌或偏好匹配的主色调"
+      },
+      "radiusFactor": {
+        "label": "圆角系数",
+        "desc": "从直角到圆润，影响所有 UI 组件的边角风格"
+      },
+      "layoutMode": {
+        "label": "布局模式",
+        "desc": "不同布局适用于不同内容复杂度的后台系统"
+      },
+      "menuAppearance": {
+        "label": "外观风格",
+        "desc": "主题色模式会将选定主题色应用到整个菜单背景"
+      },
+      "menuOpenWidth": {
+        "label": "展开宽度",
+        "desc": "推荐范围 180–320px，过宽会压缩内容区域"
+      },
+      "boxDivider": {
+        "label": "分隔样式",
+        "desc": "边框风格更轻量，阴影风格具有层次浮起感"
+      },
+      "widthMode": {
+        "label": "宽度模式",
+        "desc": "铺满会使用全部可用空间，定宽会限制内容最大宽度"
+      },
+      "tabAppearance": {
+        "label": "标签样式",
+        "desc": "谷歌风格为圆角卡片式，默认为扁平下划线样式"
+      },
+      "animationType": {
+        "label": "动画类型",
+        "desc": "选择无动画可获得最快的页面切换响应速度"
+      }
+    },
+    "sections": {
+      "appearance": "主题外观",
+      "menuNav": "菜单导航",
+      "interface": "界面容器",
+      "features": "功能开关"
+    },
+    "menuType": {
+      "title": "菜单布局",
+      "list": ["垂直", "水平", "混合", "双列"]
+    },
+    "theme": {
+      "title": "主题风格",
+      "list": ["浅色", "深色", "系统"]
+    },
+    "menu": {
+      "title": "菜单风格",
+      "styles": {
+        "design": "默认",
+        "dark": "暗色",
+        "light": "主题色"
+      }
+    },
+    "color": {
+      "title": "系统主题色"
+    },
+    "box": {
+      "title": "盒子样式",
+      "list": ["边框", "阴影"]
+    },
+    "container": {
+      "title": "容器宽度",
+      "list": ["铺满", "定宽"]
+    },
+    "basics": {
+      "title": "基础配置",
+      "list": {
+        "multiTab": "开启多标签栏",
+        "accordion": "侧边栏开启手风琴模式",
+        "collapseSidebar": "显示折叠侧边栏按钮",
+        "fastEnter": "显示快速入口",
+        "reloadPage": "显示重载页面按钮",
+        "breadcrumb": "显示全局面包屑导航",
+        "language": "显示多语言选择",
+        "progressBar": "显示顶部进度条",
+        "weakMode": "色弱模式",
+        "watermark": "全局水印",
+        "menuWidth": "菜单宽度",
+        "tabStyle": "标签页风格",
+        "pageTransition": "页面切换动画",
+        "borderRadius": "自定义圆角"
+      }
+    },
+    "tabStyle": {
+      "default": "默认",
+      "card": "卡片",
+      "google": "谷歌"
+    },
+    "radius": {
+      "sharp": "直角",
+      "rounded": "圆润"
+    },
+    "descriptions": {
+      "multiTab": "在页面顶部显示多页签导航",
+      "accordion": "同时只展开一个菜单组",
+      "collapseSidebar": "显示收起 / 展开触发按钮",
+      "fastEnter": "工具栏显示常用功能快捷方式",
+      "reloadPage": "在标签栏显示页面刷新按钮",
+      "breadcrumb": "页面顶部显示路径导航",
+      "language": "顶栏显示语言切换入口",
+      "progressBar": "路由切换时显示加载进度",
+      "weakMode": "使用对色弱友好的配色方案",
+      "watermark": "在页面内容区域叠加水印"
+    },
+    "transition": {
+      "list": {
+        "none": "无动画",
+        "fade": "淡入淡出",
+        "slideLeft": "左侧滑入",
+        "slideBottom": "下方滑入",
+        "slideTop": "上方滑入"
+      },
+      "desc": {
+        "none": "切换时不播放过渡",
+        "fade": "新旧页面交叉淡入淡出",
+        "slideLeft": "新页面从左侧滑入",
+        "slideBottom": "新页面从下方滑入",
+        "slideTop": "新页面从上方滑入"
+      }
+    },
+    "actions": {
+      "resetConfig": "恢复默认",
+      "saveConfig": "保存配置",
+      "saveSuccess": "配置已保存",
+      "copyConfig": "复制配置",
+      "copySuccess": "配置已复制到剪贴板，可粘贴到 src/config/setting.ts 文件中",
+      "copyFailed": "复制失败，请重试",
+      "resetFailed": "重置失败，请刷新页面后重试"
+    }
+  },
+  "notice": {
+    "title": "通知",
+    "btnRead": "标为已读",
+    "bar": ["通知", "消息", "代办"],
+    "text": ["暂无"],
+    "viewAll": "查看全部"
+  },
+  "worktab": {
+    "btn": {
+      "refresh": "刷新",
+      "fixed": "固定",
+      "unfixed": "取消固定",
+      "closeLeft": "关闭左侧",
+      "closeRight": "关闭右侧",
+      "closeOther": "关闭其他",
+      "closeAll": "关闭全部"
+    }
+  },
+  "login": {
+    "leftView": {
+      "title": "一款兼具设计美学与高效开发的后台系统",
+      "subTitle": "美观实用的界面，经过视觉优化，确保卓越的用户体验"
+    },
+    "title": "欢迎回来",
+    "subTitle": "输入您的账号和密码登录",
+    "roles": {
+      "super": "超级管理员",
+      "admin": "管理员",
+      "user": "普通用户"
+    },
+    "placeholder": {
+      "username": "请输入账号",
+      "password": "请输入密码",
+      "slider": "请拖动滑块完成验证"
+    },
+    "sliderText": "按住滑块拖动",
+    "sliderSuccessText": "验证成功",
+    "rememberPwd": "记住密码",
+    "forgetPwd": "忘记密码",
+    "btnText": "登录",
+    "noAccount": "还没有账号？",
+    "register": "注册",
+    "success": {
+      "title": "登录成功",
+      "message": "欢迎回来"
+    }
+  },
+  "forgetPassword": {
+    "title": "忘记密码？",
+    "subTitle": "输入您的电子邮件来重置您的密码",
+    "placeholder": "请输入您的电子邮件",
+    "submitBtnText": "提交",
+    "backBtnText": "返回"
+  },
+  "register": {
+    "title": "创建账号",
+    "subTitle": "欢迎加入我们，请填写以下信息完成注册",
+    "placeholder": {
+      "username": "请输入账号",
+      "password": "请输入密码",
+      "confirmPassword": "请再次输入密码"
+    },
+    "rule": {
+      "confirmPasswordRequired": "请再次输入密码",
+      "passwordMismatch": "两次输入密码不一致!",
+      "usernameLength": "长度在 3 到 20 个字符",
+      "passwordLength": "密码长度不能小于6位",
+      "agreementRequired": "请同意隐私协议"
+    },
+    "agreeText": "我同意",
+    "privacyPolicy": "《隐私政策》",
+    "submitBtnText": "注册",
+    "hasAccount": "已有账号？",
+    "toLogin": "去登录"
+  },
+  "lockScreen": {
+    "pwdError": "密码错误",
+    "lock": {
+      "inputPlaceholder": "请输入锁屏密码",
+      "btnText": "锁定"
+    },
+    "unlock": {
+      "inputPlaceholder": "请输入解锁密码",
+      "btnText": "解锁",
+      "backBtnText": "返回登录"
+    }
+  },
+  "greeting": {
+    "dawn": "凌晨了！",
+    "morning": "上午好！",
+    "afternoon": "下午好！",
+    "evening": "晚上好！"
+  },
+  "exceptionPage": {
+    "403": "抱歉，您无权访问该页面",
+    "404": "抱歉，您访问的页面不存在",
+    "500": "抱歉，服务器出错了",
+    "gohome": "返回首页"
+  },
+  "menus": {
+    "login": {
+      "title": "登录"
+    },
+    "register": {
+      "title": "注册"
+    },
+    "forgetPassword": {
+      "title": "忘记密码"
+    },
+    "outside": {
+      "title": "内嵌页面"
+    },
+    "dashboard": {
+      "title": "仪表盘",
+      "console": "工作台"
+    },
+    "result": {
+      "title": "结果页面",
+      "success": "成功页",
+      "fail": "失败页"
+    },
+    "exception": {
+      "title": "异常页面",
+      "forbidden": "403",
+      "notFound": "404",
+      "serverError": "500"
+    },
+    "system": {
+      "title": "系统管理",
+      "user": "用户管理",
+      "role": "角色管理",
+      "userCenter": "个人中心",
+      "preferences": "偏好设置",
+      "menu": "菜单管理"
+    }
+  },
+  "table": {
+    "form": {
+      "reset": "重置",
+      "submit": "提交"
+    },
+    "searchBar": {
+      "reset": "重置",
+      "search": "查询",
+      "expand": "展开",
+      "collapse": "收起",
+      "searchInputPlaceholder": "请输入",
+      "searchSelectPlaceholder": "请选择"
+    },
+    "selection": "选择",
+    "sizeOptions": {
+      "small": "紧凑",
+      "default": "默认",
+      "large": "宽松"
+    },
+    "column": {
+      "selection": "勾选",
+      "expand": "展开",
+      "index": "序号"
+    },
+    "zebra": "斑马纹",
+    "border": "边框",
+    "headerBackground": "表头背景"
+  }
+}

@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: views/dashboard_console
+title: 控制台工作台视图
+scope:
+    - src/views/dashboard/console/
+source_files: []
+depends_on: []
+related_to: []

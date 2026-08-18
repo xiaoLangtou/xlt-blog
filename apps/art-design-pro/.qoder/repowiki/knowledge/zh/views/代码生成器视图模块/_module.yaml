@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: views/gen
+title: 代码生成器视图模块
+scope:
+    - src/views/gen/
+source_files: []
+depends_on: []
+related_to: []
