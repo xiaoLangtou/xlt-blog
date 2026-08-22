@@ -177,7 +177,6 @@
   import { themeAnimation } from '@/utils/ui/animation'
   import { useCommon } from '@/hooks/core/useCommon'
   import { useHeaderBar } from '@/hooks/core/useHeaderBar'
-  import { useMenuQuery } from '@/hooks/queries/useMenuQuery'
   import ArtUserMenu from './widget/ArtUserMenu.vue'
 
   defineOptions({ name: 'ArtHeaderBar' })
@@ -214,11 +213,7 @@
 
   const { language } = storeToRefs(userStore)
 
-  const { data: appMenuList } = useMenuQuery({
-    enabled: computed(() => userStore.isLogin)
-  })
-
-  const menuList = computed(() => appMenuList.value ?? menuStore.menuList)
+  const menuList = computed(() => menuStore.menuList)
 
   const showNotice = ref(false)
   const notice = ref(null)

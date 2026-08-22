@@ -39,6 +39,10 @@ interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
   showSuccessMessage?: boolean
 }
 
+interface AuthTrackedRequestConfig extends InternalAxiosRequestConfig {
+  authToken?: string
+}
+
 const { VITE_API_URL, VITE_WITH_CREDENTIALS } = import.meta.env
 
 /** Axios实例 */
@@ -64,8 +68,9 @@ const axiosInstance = axios.create({
 
 /** 请求拦截器 */
 axiosInstance.interceptors.request.use(
-  (request: InternalAxiosRequestConfig) => {
+  (request: AuthTrackedRequestConfig) => {
     const { accessToken } = useUserStore()
+    request.authToken = accessToken
     if (accessToken) request.headers.set('Authorization', `Bearer ${accessToken}`)
 
     if (request.data && !(request.data instanceof FormData) && !request.headers['Content-Type']) {
@@ -98,14 +103,23 @@ axiosInstance.interceptors.response.use(
     const message = getResponseMessage(response.data)
 
     if (isBusinessSuccess(code)) return response
-    if (code === ApiStatus.unauthorized) handleUnauthorizedError(message)
+    if (code === ApiStatus.unauthorized) {
+      handleUnauthorizedError(message, getRequestAuthToken(response.config))
+    }
     throw createHttpError(message || $t('httpMsg.requestFailed'), code)
   },
   (error) => {
-    if (error.response?.status === ApiStatus.unauthorized) handleUnauthorizedError()
+    if (error.response?.status === ApiStatus.unauthorized) {
+      handleUnauthorizedError(undefined, getRequestAuthToken(error.config))
+    }
     return Promise.reject(handleError(error))
   }
 )
+
+/** 获取发起请求时使用的访问令牌，用于忽略已被新登录会话替代的 401 响应。 */
+function getRequestAuthToken(config?: AxiosRequestConfig): string | undefined {
+  return (config as AuthTrackedRequestConfig | undefined)?.authToken
+}
 
 /** 统一创建HttpError */
 function createHttpError(message: string, code: number) {
@@ -113,8 +127,14 @@ function createHttpError(message: string, code: number) {
 }
 
 /** 处理401错误（带防抖） */
-function handleUnauthorizedError(message?: string): never {
+function handleUnauthorizedError(message?: string, requestToken?: string): never {
   const error = createHttpError(message || $t('httpMsg.unauthorized'), ApiStatus.unauthorized)
+  const userStore = useUserStore()
+
+  // 登录成功后，旧 token 发出的请求可能才返回 401。该响应不应注销新会话。
+  if (requestToken && requestToken !== userStore.accessToken) {
+    throw error
+  }
 
   if (!isUnauthorizedErrorShown) {
     isUnauthorizedErrorShown = true
@@ -122,7 +142,6 @@ function handleUnauthorizedError(message?: string): never {
 
     // 守卫导航进行中时，由守卫通过 next() 统一重定向到登录页；拦截器只清理会话，
     // 避免 router.replace 与守卫导航竞争导致跳转丢失。非守卫场景（如页面内接口调用）仍由 logOut 负责跳转。
-    const userStore = useUserStore()
     if (isRouteGuardNavigating()) {
       userStore.clearSession()
     } else {

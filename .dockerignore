@@ -7,6 +7,7 @@ node_modules
 !packages/shared/dist
 !apps/art-design-pro/dist
 !apps/web/.output
+!apps/web/.output/server/node_modules
 **/.nuxt
 **/.auto-import.json
 

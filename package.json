@@ -14,7 +14,7 @@
     "dev:web": "pnpm --filter @xlt-blog/web dev",
     "build": "pnpm --filter @xlt-blog/shared build && pnpm --filter \"./apps/*\" build",
     "build:shared": "pnpm --filter @xlt-blog/shared build",
-    "build:console": "pnpm run build:shared && pnpm --filter art-design-pro build",
+    "build:console": "pnpm run build:shared && pnpm --filter art-design-pro build ",
     "build:admin": "pnpm run build:console",
     "build:server": "pnpm run build:shared && pnpm --filter @xlt-blog/server build",
     "build:web": "pnpm run build:shared && pnpm --filter @xlt-blog/web build",

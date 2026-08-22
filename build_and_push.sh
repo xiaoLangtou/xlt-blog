@@ -2,10 +2,11 @@
 set -e
 
 # =====================================================================
-# 本地构建并推送 xlt-blog 三个服务镜像到华为云 SWR
+# 构建并推送 xlt-blog 三个服务镜像到华为云 SWR
 #
-# 流程：本地 pnpm build 出 dist/.output -> docker build 只拷产物（server
-# 额外在容器内装 linux/amd64 平台的生产依赖）-> tag -> push
+# admin / web：本地 pnpm build 出 dist/.output，Dockerfile 只负责拷产物
+# server     ：完全交给 Docker（容器内编译 + 装 linux/amd64 平台生产依赖），
+#              避免本地 node_modules 里可能存在的原生二进制跨平台不兼容
 #
 # 用法:
 #   ./build_and_push.sh                      # 交互输入版本号，构建并推送全部
@@ -22,7 +23,7 @@ set -e
 # 华为云 SWR 镜像仓库地址
 REGISTRY="swr.cn-north-4.myhuaweicloud.com/weipengcheng"
 
-# 服务 -> Dockerfile / 本地 build 脚本 映射
+# 服务 -> Dockerfile 映射（构建上下文统一为仓库根目录）
 # 用 case 而非 declare -A，兼容 macOS 自带 bash 3.2
 dockerfile_for() {
   case "$1" in
@@ -33,9 +34,9 @@ dockerfile_for() {
   esac
 }
 
+# 只有 admin/web 需要本地编译；server 交给容器内 build，这里查不到就跳过本地编译
 build_script_for() {
   case "$1" in
-    server) echo "build:server" ;;
     web)    echo "build:web" ;;
     admin)  echo "build:admin" ;;
     *)      return 1 ;;
@@ -79,16 +80,19 @@ echo "  服务   : ${SERVICES[*]}"
 echo "  架构   : linux/amd64"
 echo "================================================================"
 
-# ---- 本地编译 + 构建镜像 + 推送 ----
+# ---- 构建并推送 ----
 for svc in "${SERVICES[@]}"; do
   image_name="xlt-blog-${svc}"
   full_image="${REGISTRY}/${image_name}:${VERSION}"
   dockerfile="$(dockerfile_for "$svc")"
-  build_script="$(build_script_for "$svc")"
 
   echo ""
-  echo "🔨 [${svc}] 本地编译 (pnpm run ${build_script}) ..."
-  pnpm run "$build_script"
+  if build_script="$(build_script_for "$svc")"; then
+    echo "🔨 [${svc}] 本地编译 (pnpm run ${build_script}) ..."
+    pnpm run "$build_script"
+  else
+    echo "🔨 [${svc}] 编译交给容器内构建 ..."
+  fi
 
   echo "📦 [${svc}] 构建镜像 ..."
   docker build --platform=linux/amd64 -f "$dockerfile" -t "${image_name}:${VERSION}" .

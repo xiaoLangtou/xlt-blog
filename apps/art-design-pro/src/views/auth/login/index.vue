@@ -141,13 +141,15 @@
         throw new Error('Login failed - no token received')
       }
 
+      // 登录前同步清理可能残留的会话和动态路由，确保新 token 必定触发完整路由初始化。
+      userStore.clearSession()
       userStore.setToken(accessToken)
       userStore.setUserInfo(userInfo)
       userStore.setLoginStatus(true)
       showLoginSuccessNotice()
 
       const redirect = route.query.redirect as string
-      router.push(redirect || '/blog/articles')
+      await router.push(redirect || '/')
     } catch (error) {
       if (!(error instanceof HttpError)) {
         console.error('[Login] Unexpected error:', error)

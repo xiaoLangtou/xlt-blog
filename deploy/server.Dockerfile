@@ -34,8 +34,13 @@ COPY --from=prod-deps /repo/packages/shared/node_modules ./packages/shared/node_
 COPY apps/server/dist     ./apps/server/dist
 COPY packages/shared/dist ./packages/shared/dist
 
-# 3) package.json（mikro-orm CLI 读取 mikro-orm 配置块定位 config 文件）
-COPY apps/server/package.json ./apps/server/package.json
+# 3) package.json
+#    - apps/server/package.json：mikro-orm CLI 读取 mikro-orm 配置块定位 config 文件
+#    - packages/shared/package.json：node_modules/@xlt-blog/shared 是指向本目录的
+#      符号链接，Node 解析该包时要读这个文件的 main/exports 字段才知道去哪找 dist，
+#      漏拷会导致运行时报 "Cannot find module '@xlt-blog/shared'"
+COPY apps/server/package.json     ./apps/server/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
 
 # 4) entrypoint
 COPY deploy/server-entrypoint.sh /server-entrypoint.sh

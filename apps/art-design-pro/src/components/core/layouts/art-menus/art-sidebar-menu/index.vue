@@ -133,8 +133,6 @@
   import { useSettingStore } from '@/store/modules/setting'
   import { MenuTypeEnum, MenuWidth } from '@/enums/appEnum'
   import { useMenuStore } from '@/store/modules/menu'
-  import { useUserStore } from '@/store/modules/user'
-  import { useMenuQuery } from '@/hooks/queries/useMenuQuery'
   import { isIframe } from '@/utils/navigation'
   import { handleMenuJump } from '@/utils/navigation'
   import SidebarSubmenu from './widget/SidebarSubmenu.vue'
@@ -150,15 +148,10 @@
   const route = useRoute()
   const router = useRouter()
   const settingStore = useSettingStore()
-  const userStore = useUserStore()
   const menuStore = useMenuStore()
 
-  const { data: appMenuList } = useMenuQuery({
-    enabled: computed(() => userStore.isLogin)
-  })
-
-  /** 优先使用 Query 缓存，回退至 store（路由守卫初始化阶段） */
-  const allMenus = computed(() => appMenuList.value ?? menuStore.menuList)
+  /** 菜单仅使用路由守卫初始化后写入的状态，避免二次请求与路由表脱节。 */
+  const allMenus = computed(() => menuStore.menuList)
 
   const { getMenuOpenWidth, menuType, uniqueOpened, dualMenuShowText, menuOpen, getMenuTheme } =
     storeToRefs(settingStore)
