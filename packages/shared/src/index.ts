@@ -12,13 +12,21 @@ export enum CodeTheme {
   Atom = 'atom'
 }
 
-/** 正文内容格式：决定存储与渲染方式 */
-export enum ContentFormat {
-  /** Markdown 源码，前台/预览走 markdown-it 渲染 */
-  Markdown = 'markdown',
-  /** 安全 HTML，前台/预览直接渲染 */
-  Html = 'html'
+/** 编辑器类型：决定 rawContent 结构与转换器选择 */
+export enum EditorType {
+  /** Markdown 源码 */
+  MD = 'md',
+  /** TipTap ProseMirror JSON */
+  TIPTAP = 'tiptap',
+  /** Domternal ProseMirror JSON */
+  DOMTERNAL = 'domternal'
 }
+
+/**
+ * 当前渲染器版本：转换器 / sanitize 白名单 / 高亮方案升级时递增，
+ * 存量内容通过批量重渲染接口回刷 renderHtml。
+ */
+export const CURRENT_RENDERER_VERSION = 1
 
 /** 评论状态 */
 export enum CommentStatus {
@@ -90,8 +98,9 @@ export interface ArticleListItemDto {
 }
 
 export interface ArticleDetailDto extends ArticleListItemDto {
-  content: string
-  contentFormat: ContentFormat
+  /** 渲染后的安全 HTML（保存时由后端统一转换 + 净化生成） */
+  renderHtml: string
+  editorType: EditorType
   codeTheme: CodeTheme
 }
 
@@ -274,8 +283,9 @@ export interface PageDto {
   id: number
   title: string
   slug: string
-  content: string
-  contentFormat: ContentFormat
+  /** 渲染后的安全 HTML */
+  renderHtml: string
+  editorType: EditorType
   status: ArticleStatus
   createdAt: string
   updatedAt: string

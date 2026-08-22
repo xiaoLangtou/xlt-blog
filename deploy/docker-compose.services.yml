@@ -1,0 +1,80 @@
+# 应用服务编排（后端 server / 前台 web 用户端 / 后台 admin）
+# 用法（需先启动公共基础设施）:
+#   docker compose --env-file deploy/.env.deploy -f deploy/docker-compose.services.yml up -d
+#
+# 镜像从华为云 SWR 拉取，版本由 .env.deploy 的 IMAGE_TAG 指定。
+# 数据库与缓存使用 1Panel 管理的外部容器，通过 1panel-network 与本组服务互通，
+# 因此必须先启动 deploy/docker-compose.common.yml（提供 nginx 与共享网络）。
+
+name: xlt-blog
+
+networks:
+  1panel-network:
+    name: ${NETWORK_NAME:-1panel-network}
+    external: true
+
+volumes:
+  uploads:
+
+services:
+  # ============ 后端 NestJS ============
+  server:
+    image: ${IMAGE_REGISTRY:-swr.cn-north-4.myhuaweicloud.com/weipengcheng}/xlt-blog-server:${IMAGE_TAG}
+    container_name: xlt-blog-server
+    restart: unless-stopped
+    environment:
+      # 连接 1Panel 管理的外部 MySQL（1Panel-mysql-Blf7）
+      DB_HOST: 1Panel-mysql-Blf7
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-xlt_blog}
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      NODE_ENV: production
+      PORT: ${PORT:-3000}
+      UPLOAD_DIR: ${UPLOAD_DIR:-uploads}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # 连接 1Panel 管理的外部 Redis（1Panel-redis-VR85）
+      REDIS_URL: redis://:${REDIS_PASSWORD}@1Panel-redis-VR85:6379
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.openai.com/v1}
+      AI_MODEL: ${AI_MODEL:-gpt-4o-mini}
+    volumes:
+      # 上传文件持久化（UPLOAD_DIR=uploads，cwd=/repo -> /repo/uploads）
+      - uploads:/repo/uploads
+    networks:
+      - 1panel-network
+    expose:
+      - "3000"
+
+  # ============ 前台 Nuxt SSR（用户端）============
+  web:
+    image: ${IMAGE_REGISTRY:-swr.cn-north-4.myhuaweicloud.com/weipengcheng}/xlt-blog-web:${IMAGE_TAG}
+    container_name: xlt-blog-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Nuxt node-server 监听端口（显式对齐公共 nginx 反代目标）
+      NITRO_PORT: 3001
+      NITRO_HOST: 0.0.0.0
+      # 仅服务端（SSR 容器内部直连后端，走 docker 网络）
+      NUXT_API_BASE: http://server:3000/api
+      NUXT_API_SERVER: http://server:3000
+      # 浏览器端（同源 /api，由公共 nginx 反代到后端）
+      NUXT_PUBLIC_API_BASE: /api
+      # 站点对外地址（sitemap / SEO）
+      NUXT_PUBLIC_SITE_URL: ${SITE_URL}
+    networks:
+      - 1panel-network
+    expose:
+      - "3001"
+
+  # ============ 管理后台（静态资源容器）============
+  admin:
+    image: ${IMAGE_REGISTRY:-swr.cn-north-4.myhuaweicloud.com/weipengcheng}/xlt-blog-admin:${IMAGE_TAG}
+    container_name: xlt-blog-admin
+    restart: unless-stopped
+    networks:
+      - 1panel-network
+    expose:
+      - "80"

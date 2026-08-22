@@ -5,7 +5,13 @@
   const pages = ref<Api.Blog.Page[]>([])
   const dialogVisible = ref(false)
   const editingId = ref<number>()
-  const form = reactive<Api.Blog.SavePage>({ title: '', slug: '', content: '', status: 'draft' })
+  const form = reactive<Api.Blog.SavePage>({
+    title: '',
+    slug: '',
+    rawContent: '',
+    editorType: 'md',
+    status: 'draft'
+  })
 
   async function load() {
     pages.value = await blogApi.listPages()
@@ -17,14 +23,20 @@
     Object.assign(
       form,
       page
-        ? { title: page.title, slug: page.slug, content: page.content, status: page.status }
-        : { title: '', slug: '', content: '', status: 'draft' }
+        ? {
+            title: page.title,
+            slug: page.slug,
+            rawContent: page.rawContent,
+            editorType: page.editorType ?? 'md',
+            status: page.status
+          }
+        : { title: '', slug: '', rawContent: '', editorType: 'md', status: 'draft' }
     )
     dialogVisible.value = true
   }
 
   async function save() {
-    if (!form.title || !form.slug || !form.content)
+    if (!form.title || !form.slug || !form.rawContent)
       return ElMessage.warning('请填写标题、Slug 和内容')
     if (editingId.value) await blogApi.updatePage(editingId.value, form)
     else await blogApi.createPage(form)
@@ -85,8 +97,8 @@
             ><ElOption label="草稿" value="draft" /><ElOption
               label="已发布"
               value="published" /></ElSelect></ElFormItem
-        ><ElFormItem label="内容"
-          ><ElInput v-model="form.content" type="textarea" :rows="14" /></ElFormItem
+        ><ElFormItem label="内容（Markdown）"
+          ><ElInput v-model="form.rawContent" type="textarea" :rows="14" /></ElFormItem
       ></ElForm>
       <template #footer
         ><ElButton @click="dialogVisible = false">取消</ElButton

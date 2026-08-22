@@ -58,7 +58,8 @@ declare namespace Api {
 
     type CodeTheme = 'github' | 'atom'
 
-    type ContentFormat = 'markdown' | 'html' | 'domternal'
+    /** 编辑器类型（与后端 EditorType 枚举一致）：决定 rawContent 结构与服务端转换器 */
+    type EditorType = 'md' | 'tiptap' | 'domternal'
 
     interface Article {
       id: number
@@ -76,8 +77,11 @@ declare namespace Api {
     }
 
     interface ArticleDetail extends Article {
-      content: string
-      contentFormat: ContentFormat
+      /** 原始内容：md = Markdown 文本；tiptap / domternal = ProseMirror JSON 字符串 */
+      rawContent: string
+      /** 服务端统一转换 + 净化后的安全 HTML（前台展示用） */
+      renderHtml: string
+      editorType: EditorType
       codeTheme: CodeTheme
     }
 
@@ -99,13 +103,24 @@ declare namespace Api {
       title: string
       slug: string
       summary?: string
-      content: string
-      contentFormat?: ContentFormat
+      rawContent: string
+      editorType?: EditorType
       codeTheme?: CodeTheme
       cover?: string
       status?: ArticleStatus
       categoryId?: number
       tagIds?: number[]
+    }
+
+    /** 内容预览：与保存共用服务端渲染管线，保证预览与发布一致 */
+    interface PreviewContentParams {
+      editorType: EditorType
+      rawContent: string
+      codeTheme?: CodeTheme
+    }
+
+    interface PreviewContentResult {
+      html: string
     }
 
     interface SaveCategory {
@@ -179,7 +194,9 @@ declare namespace Api {
       id: number
       title: string
       slug: string
-      content: string
+      /** 原始内容（页面固定 Markdown） */
+      rawContent: string
+      editorType: EditorType
       status: ArticleStatus
       createdAt: string
       updatedAt: string
@@ -188,7 +205,9 @@ declare namespace Api {
     interface SavePage {
       title: string
       slug: string
-      content: string
+      rawContent: string
+      /** 页面编辑器固定为 Markdown，可不传 */
+      editorType?: EditorType
       status?: ArticleStatus
     }
 

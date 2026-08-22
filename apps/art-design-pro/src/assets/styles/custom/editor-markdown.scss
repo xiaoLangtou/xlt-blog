@@ -1,0 +1,76 @@
+/**
+ * Markdown 编辑器样式 - 仅编辑态
+ * 预览和渲染态使用统一的 article-content.scss
+ */
+
+.markdown-editor {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--art-gray-900);
+  font-family: var(--art-font-family-code, 'Consolas', 'Monaco', monospace);
+
+  /* CodeMirror 编辑器样式增强 */
+  .cm-editor {
+    outline: none;
+  }
+
+  .cm-scroller {
+    font-family: var(--art-font-family-code, 'Consolas', 'Monaco', monospace);
+    line-height: 1.6;
+  }
+
+  .cm-content {
+    padding: 1em;
+  }
+
+  /* Markdown 语法高亮 */
+  .cm-line {
+    padding: 0.15em 0;
+  }
+
+  /* 标题 */
+  .tok-heading {
+    font-weight: 600;
+    color: var(--art-gray-900);
+  }
+
+  .tok-heading1 { font-size: 2em; }
+  .tok-heading2 { font-size: 1.5em; }
+  .tok-heading3 { font-size: 1.25em; }
+
+  /* 加粗 */
+  .tok-strong {
+    font-weight: 600;
+  }
+
+  /* 斜体 */
+  .tok-emphasis {
+    font-style: italic;
+  }
+
+  /* 链接 */
+  .tok-link {
+    color: var(--theme-color);
+    text-decoration: underline;
+  }
+
+  /* 代码 */
+  .tok-monospace {
+    color: var(--art-gray-800);
+    background: var(--art-gray-100);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+  }
+
+  /* 列表标记 */
+  .tok-list {
+    color: var(--art-gray-600);
+  }
+
+  /* 引用 */
+  .tok-quote {
+    color: var(--art-gray-700);
+    border-left: 3px solid var(--theme-color);
+    padding-left: 1em;
+  }
+}

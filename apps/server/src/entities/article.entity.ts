@@ -9,7 +9,7 @@ import {
   PrimaryKey,
   Property
 } from '@mikro-orm/core'
-import { ArticleStatus, CodeTheme, ContentFormat } from '@xlt-blog/shared'
+import { ArticleStatus, CodeTheme, CURRENT_RENDERER_VERSION, EditorType } from '@xlt-blog/shared'
 import { Category } from './category.entity'
 import { Tag } from './tag.entity'
 // eslint-disable-next-line import/no-cycle
@@ -29,13 +29,21 @@ export class Article {
   @Property({ type: 'string', length: 500, nullable: true })
   summary: string | null = null
 
-  /** 正文原文（Markdown 或安全 HTML，取决于 contentFormat） */
+  /** 原始内容（编辑回填用）：md 为 Markdown 源码，tiptap/domternal 为 ProseMirror JSON 字符串 */
   @Property({ type: 'text', columnType: 'longtext' })
-  content!: string
+  rawContent!: string
 
-  /** 正文格式：markdown（Markdown 编辑器）或 html（富文本编辑器） */
-  @Enum({ items: () => ContentFormat, default: ContentFormat.Html })
-  contentFormat: ContentFormat = ContentFormat.Html
+  /** 统一转换 + 净化后的安全 HTML（前台/预览展示用） */
+  @Property({ type: 'text', columnType: 'longtext' })
+  renderHtml!: string
+
+  /** 生成 renderHtml 时使用的编辑器类型（决定 rawContent 结构与转换器） */
+  @Enum({ items: () => EditorType, default: EditorType.TIPTAP })
+  editorType: EditorType = EditorType.TIPTAP
+
+  /** 渲染器版本：转换器/白名单升级后批量重渲染用 */
+  @Property({ default: CURRENT_RENDERER_VERSION })
+  rendererVersion: number = CURRENT_RENDERER_VERSION
 
   @Enum({ items: () => CodeTheme, default: CodeTheme.Github })
   codeTheme: CodeTheme = CodeTheme.Github

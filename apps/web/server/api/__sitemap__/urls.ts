@@ -6,7 +6,7 @@ export default defineSitemapEventHandler(async () => {
   const config = useRuntimeConfig()
   try {
     const res = await $fetch<ApiResponse<ArchiveGroup[]>>('/archive', {
-      baseURL: config.public.apiBase
+      baseURL: config.apiBase
     })
     return (res.data ?? []).flatMap(group =>
       group.articles.map(article => ({

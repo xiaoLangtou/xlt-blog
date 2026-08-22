@@ -1,0 +1,44 @@
+/**
+ * Domternal 编辑器样式 - 仅编辑态
+ * Domternal 自带完整的 Notion 风格样式，这里只做必要的覆盖和增强
+ */
+
+.dm-editor {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--art-gray-900);
+
+  /* 确保代码块使用统一的等宽字体 */
+  pre, code {
+    font-family: var(--art-font-family-code, 'Consolas', 'Monaco', monospace);
+  }
+
+  /* 链接颜色统一为主题色 */
+  a {
+    color: var(--theme-color);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--theme-color) 40%, transparent);
+
+    &:hover {
+      text-decoration-color: var(--theme-color);
+    }
+  }
+
+  /* 表格边框颜色 */
+  table {
+    td, th {
+      border-color: var(--default-border);
+    }
+  }
+
+  /* 代码块背景 */
+  pre {
+    background: var(--art-gray-100);
+    border: 1px solid var(--default-border);
+  }
+
+  /* 引用块左边框 */
+  blockquote {
+    border-left-color: var(--theme-color);
+  }
+}

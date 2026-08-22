@@ -1,19 +1,17 @@
 <script setup lang="ts">
-import { CodeTheme, type PageDto } from '@xlt-blog/shared'
+import type { PageDto } from '@xlt-blog/shared'
 
 const route = useRoute()
 const slug = computed(() => String(route.params.slug))
 
 const config = useRuntimeConfig()
 
-// SSR 阶段完成取数与 Markdown 渲染，保证查看源码可见正文
+// SSR 阶段取数：正文为后端统一渲染的安全 HTML，直接渲染
 const { data, error } = await useAsyncData(`page-${slug.value}`, async () => {
   const res = await $fetch<{ data: PageDto }>(`/pages/${slug.value}`, {
-    baseURL: config.public.apiBase
+    baseURL: import.meta.server ? config.apiBase : config.public.apiBase
   })
-  const page = res.data
-  const html = await renderMarkdown(page.content, CodeTheme.Github, page.contentFormat)
-  return { page, html }
+  return { page: res.data, html: res.data.renderHtml }
 })
 
 if (error.value || !data.value) {
@@ -49,7 +47,11 @@ function formatDate(value: string) {
         </p>
       </header>
 
-      <div class="markdown-body" v-html="data.html" />
+      <div
+        class="article-content"
+        :class="`editor-${page.editorType}`"
+        v-html="data.html"
+      />
 
       <div class="flex justify-center my-14" aria-hidden="true">
         <span class="seal">栖迟</span>

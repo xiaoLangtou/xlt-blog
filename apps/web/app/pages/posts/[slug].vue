@@ -6,14 +6,13 @@
 
   const config = useRuntimeConfig()
 
-  // 文章详情 + Markdown 渲染一并在 SSR 阶段完成，保证查看源码可见正文
+  // 文章详情 SSR 取数：正文为后端统一渲染的安全 HTML（转换 + 净化 + Shiki），
+  // 前台直接渲染，保证查看源码可见正文且各编辑器产物表现一致
   const { data, error } = await useAsyncData(`post-${slug.value}`, async () => {
     const res = await $fetch<{ data: ArticleDetailDto }>(`/articles/${slug.value}`, {
-      baseURL: config.public.apiBase
+      baseURL: import.meta.server ? config.apiBase : config.public.apiBase
     })
-    const article = res.data
-    const html = await renderMarkdown(article.content, article.codeTheme, article.contentFormat)
-    return { article, html }
+    return { article: res.data, html: res.data.renderHtml }
   })
 
   if (error.value || !data.value) {
@@ -121,8 +120,12 @@
         class="w-full rounded-xs border border-default/60 mb-10"
       />
 
-      <!-- Markdown 渲染结果，服务端已完成高亮 -->
-      <div class="markdown-body" v-html="data.html" />
+      <!-- 后端渲染结果：已在保存/发布时完成转换、净化与高亮 -->
+      <div
+        class="article-content"
+        :class="`editor-${article.editorType}`"
+        v-html="data.html"
+      />
 
       <!-- 文末收束：居中小印代替分隔线 -->
       <div class="flex justify-center my-14" aria-hidden="true">

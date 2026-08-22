@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>文章预览样式原型 · 栖迟</title>
+  <style>
+    :root {
+      --dai: #1a3a92;
+      --dai-deep: #122045;
+      --dai-soft: #e8eefb;
+      --cinnabar: #b5342d;
+      --paper: #fcfbf8;
+      --paper-raised: #fffefb;
+      --ink: #202a3b;
+      --muted: #677084;
+      --rule: #d9deea;
+      --code-bg: #f3f6fa;
+      --code-rule: #dce3ef;
+      --shadow: 0 20px 70px rgb(23 39 72 / 11%);
+      --serif: Georgia, 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', SimSun, serif;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-width: 320px;
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--sans);
+      background: #eef1f6;
+      background-image: radial-gradient(rgb(26 58 146 / 7%) 0.6px, transparent 0.6px);
+      background-size: 5px 5px;
+    }
+    .reading-progress { position: fixed; z-index: 10; inset: 0 auto auto 0; width: 100%; height: 3px; transform-origin: left; transform: scaleX(0); background: var(--cinnabar); }
+    .topbar { position: sticky; z-index: 5; top: 0; display: flex; align-items: center; justify-content: space-between; height: 58px; padding: 0 max(20px, calc((100vw - 1180px) / 2)); border-bottom: 1px solid rgb(26 58 146 / 12%); background: rgb(252 251 248 / 86%); backdrop-filter: blur(14px); }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--dai-deep); font-family: var(--serif); font-weight: 700; letter-spacing: .16em; }
+    .brand-seal { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 3px; background: var(--cinnabar); color: white; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; }
+    .topbar-actions { display: flex; align-items: center; gap: 14px; }
+    .preview-label { color: var(--muted); font-size: 12px; letter-spacing: .08em; }
+    button { cursor: pointer; font: inherit; }
+    .theme-switch { display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid var(--rule); border-radius: 50%; color: var(--dai); background: var(--paper-raised); }
+    .page { width: min(100% - 32px, 980px); margin: 28px auto 64px; padding: clamp(28px, 5vw, 64px) clamp(22px, 8vw, 112px) 56px; border: 1px solid rgb(26 58 146 / 17%); outline: 1px solid rgb(26 58 146 / 10%); outline-offset: 4px; background: var(--paper); box-shadow: var(--shadow); }
+    .issue-line { display: flex; align-items: center; gap: 13px; margin-bottom: 24px; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; }
+    .issue-line::after { height: 1px; flex: 1; content: ''; background: var(--rule); }
+    .post-header { padding-bottom: 31px; border-bottom: 1px solid var(--rule); }
+    .category { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 13px; color: var(--dai); font-size: 12px; font-weight: 700; letter-spacing: .13em; }
+    .category::before { width: 22px; height: 1px; content: ''; background: currentColor; }
+    h1 { max-width: 810px; margin: 0; color: var(--dai-deep); font-family: var(--serif); font-size: clamp(32px, 5vw, 50px); font-weight: 700; line-height: 1.22; letter-spacing: .04em; }
+    .lede { max-width: 690px; margin: 16px 0 0; padding-left: 15px; border-left: 2px solid var(--cinnabar); color: var(--muted); font-family: var(--serif); font-size: 17px; line-height: 1.78; }
+    .meta { display: flex; flex-wrap: wrap; gap: 9px 16px; margin-top: 20px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+    .meta span + span::before { margin-right: 16px; content: '/'; color: #a6afbd; }
+    .article-body { margin-top: 37px; font-size: 16px; line-height: 1.78; }
+    .article-body h2 { position: relative; margin: 48px 0 17px; padding: 0 0 9px 18px; border-bottom: 1px solid var(--rule); color: var(--dai-deep); font-family: var(--serif); font-size: clamp(25px, 3.6vw, 31px); line-height: 1.4; letter-spacing: .05em; }
+    .article-body h2::before { position: absolute; top: .3em; left: 0; width: 4px; height: 1.1em; content: ''; background: var(--cinnabar); }
+    .article-body h2:first-child { margin-top: 0; }
+    .article-body h3 { margin: 28px 0 9px; color: var(--dai); font-family: var(--serif); font-size: 21px; line-height: 1.45; letter-spacing: .04em; }
+    .article-body h4 { margin: 21px 0 6px; color: var(--ink); font-size: 17px; line-height: 1.65; }
+    .article-body p { margin: 9px 0; }
+    .article-body strong { color: var(--dai-deep); font-weight: 700; }
+    .article-body a { color: var(--dai); text-decoration-color: rgb(26 58 146 / 35%); text-underline-offset: 3px; }
+    .article-body :not(pre) > code { padding: .16em .4em; border: 1px solid rgb(26 58 146 / 11%); border-radius: 4px; color: #9e2f2c; background: #f5f2f1; font-family: var(--mono); font-size: .86em; }
+    .article-body ul, .article-body ol { margin: 10px 0; padding-left: 1.45em; }
+    .article-body li { padding-left: .28em; margin: 3px 0; }
+    .article-body li::marker { color: var(--cinnabar); font-weight: 700; }
+    .article-body li p { margin: 0; }
+    .article-body .shiki { position: relative; margin: 16px 0; padding: 17px 21px; overflow: auto; border: 1px solid var(--code-rule); border-radius: 5px; background: var(--code-bg) !important; box-shadow: inset 3px 0 var(--dai); color: #24292e; font-family: var(--mono); font-size: 13px; line-height: 1.65; tab-size: 2; }
+    .article-body .shiki code { display: block; min-width: max-content; }
+    .article-body .line { display: block; min-height: 1.65em; }
+    .article-body table { display: table; width: 100%; margin: 18px 0; overflow: hidden; border-collapse: collapse; border: 1px solid var(--rule); border-radius: 5px; font-size: 14px; }
+    .article-body th, .article-body td { padding: 9px 13px; border: 1px solid var(--rule); text-align: left; vertical-align: top; }
+    .article-body th { color: var(--dai-deep); background: #f0f4fb; font-weight: 700; }
+    .article-body td p, .article-body th p { margin: 0; }
+    .article-body tr:nth-child(even) td { background: rgb(240 244 251 / 40%); }
+    .article-body hr { position: relative; height: 14px; margin: 22px 0 0; border: 0; text-align: center; }
+    .article-body hr + h2 { margin: 0 0 17px !important; }
+    .article-body hr::before { position: absolute; top: 7px; right: 0; left: 0; height: 1px; content: ''; background: var(--rule); }
+    .article-body hr::after { position: relative; z-index: 1; padding: 0 13px; content: '※'; color: var(--cinnabar); background: var(--paper); font-size: 16px; }
+    .article-end { display: flex; justify-content: center; margin-top: 67px; }
+    .seal { display: grid; width: 36px; height: 50px; place-items: center; border-radius: 3px; background: var(--cinnabar); color: #fff; font-family: var(--serif); font-size: 15px; letter-spacing: .2em; writing-mode: vertical-rl; box-shadow: 2px 2px 0 rgb(181 52 45 / 18%); }
+    .footnote { margin: 21px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
+    body.dark { --paper: #171d28; --paper-raised: #202837; --ink: #dce4f2; --muted: #9ba8bb; --rule: #344158; --dai: #91b5ff; --dai-deep: #d8e4ff; --dai-soft: #202b41; --code-bg: #111823; --code-rule: #344158; background-color: #111622; }
+    body.dark .topbar { border-color: rgb(145 181 255 / 17%); background: rgb(23 29 40 / 84%); }
+    body.dark .article-body strong { color: #e5ecff; }
+    body.dark .article-body :not(pre) > code { border-color: #4b3d47; color: #ffa9a2; background: #2a2228; }
+    body.dark .article-body .shiki, body.dark .article-body .shiki span { color: var(--shiki-dark, #e1e4e8) !important; background-color: var(--shiki-dark-bg, #111823) !important; }
+    body.dark .article-body th { background: #202b41; color: #e1eaff; }
+    body.dark .article-body tr:nth-child(even) td { background: rgb(32 43 65 / 45%); }
+    body.dark .article-body hr::after { background: var(--paper); }
+    @media (max-width: 640px) { .topbar { height: 52px; padding: 0 16px; } .preview-label { display: none; } .page { width: calc(100% - 20px); margin-top: 20px; padding-bottom: 48px; } .article-body { font-size: 15.5px; } .article-body h2 { margin-top: 51px; font-size: 25px; } .article-body h3 { margin-top: 32px; font-size: 20px; } .article-body .shiki { margin-right: -2px; margin-left: -2px; padding: 18px 16px; font-size: 12px; } .article-body table { display: block; overflow-x: auto; white-space: nowrap; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+  <header class="topbar">
+    <div class="brand"><span class="brand-seal">栖迟</span><span>栖迟 · 文章预览</span></div>
+    <div class="topbar-actions"><span class="preview-label">LOCAL STYLE PROTOTYPE</span><button class="theme-switch" type="button" aria-label="切换深浅色" title="切换深浅色">◐</button></div>
+  </header>
+  <main class="page">
+    <div class="issue-line">PROGRAMMING NOTES · JAVA BASICS · 2026.08</div>
+    <article>
+      <header class="post-header">
+        <div class="category">JAVA 学习笔记</div>
+        <h1>Java 基础写法、程序运行与包的概念</h1>
+        <p class="lede">从类、变量与方法出发，建立 Java 程序的最小认知框架。此原型采用你提供的教程内容，用于校验长文阅读、语法高亮与知识表格的呈现效果。</p>
+        <div class="meta"><span>2026.08.19</span><span>Java</span><span>约 12 分钟阅读</span></div>
+      </header>
+      <section class="article-body">
+        <h2>一、Java 的基本写法</h2>
+        <h3>核心原则</h3>
+        <p><strong>先有类，再有变量和方法。</strong></p>
+        <p>Java 是强类型语言，所有代码都必须写在类里面。不能像 JavaScript 那样在文件最外层直接写变量或函数。</p>
+        <pre class="shiki shiki-themes github-light github-dark" style="--shiki-dark-bg:#24292e;--shiki-dark:#e1e4e8" tabindex="0"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// 正确写法</span></span><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Demo</span><span> {</span></span><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    int</span><span> a = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span>;</span></span><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> test</span><span>() {}</span></span><span class="line">}</span></code></pre>
+        <h3>文件与类的关系</h3>
+        <ul><li><p>一个 <code>.java</code> 文件中可以写多个类</p></li><li><p><strong>最多只能有一个 <code>public</code> 类</strong>，且该类的名字必须和文件名一致</p></li><li><p>如果文件名为 <code>Run.java</code>，那么 <code>public class Run {}</code> 是合法的</p></li></ul>
+        <h3>变量 / 属性写法</h3>
+        <pre class="shiki shiki-themes github-light github-dark" style="--shiki-dark-bg:#24292e;--shiki-dark:#e1e4e8" tabindex="0"><code><span class="line"><span>修饰符 类型 名字 = 值;</span></span><span class="line"></span><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">final</span><span> String str = </span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;aaa&quot;</span><span>;</span></span><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">private</span><span> String sort = </span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;bbb&quot;</span><span>;</span></span><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span> age = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">18</span><span>;</span></span></code></pre>
+        <p>每个变量定义时都必须明确类型。</p>
+        <h3>本节要点</h3>
+        <ol><li><p>所有代码都必须写在类里面</p></li><li><p>类是 Java 程序的基本构成单元</p></li><li><p>一个 <code>.java</code> 文件中，与文件名同名的 <code>public</code> 类只能有一个</p></li><li><p>Java 写法可总结为：<strong>修饰符 + 类型 + 名字</strong></p></li></ol>
+        <hr />
+        <h2>二、运行 Java 程序</h2>
+        <h3>入口方法</h3>
+        <p>Java 程序从 <code>public static void main(String[] args)</code> 开始执行。</p>
+        <pre class="shiki shiki-themes github-light github-dark" style="--shiki-dark-bg:#24292e;--shiki-dark:#e1e4e8" tabindex="0"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Start</span><span> {</span></span><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  public static void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> main</span><span>(String[] args) {</span></span><span class="line"><span>    System.out.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">println</span><span>(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;Hello Java&quot;</span><span>);</span></span><span class="line">  }</span><span class="line">}</span></code></pre>
+        <h3>main 方法各关键字含义</h3>
+        <table data-blog-table="1" data-fit="container"><thead><tr><th><p>关键字</p></th><th><p>含义</p></th></tr></thead><tbody><tr><td><p><code>public</code></p></td><td><p>JVM 可以从外部访问</p></td></tr><tr><td><p><code>static</code></p></td><td><p>不用创建对象就能调用</p></td></tr><tr><td><p><code>void</code></p></td><td><p>没有返回值</p></td></tr><tr><td><p><code>String[] args</code></p></td><td><p>命令行参数</p></td></tr></tbody></table>
+        <h3>编译与运行流程</h3>
+        <pre class="shiki shiki-themes github-light github-dark" style="--shiki-dark-bg:#24292e;--shiki-dark:#e1e4e8" tabindex="0"><code><span class="line">xx.java 文件</span><span class="line">    ↓ javac xx.java</span><span class="line">xx.class 文件（字节码）</span><span class="line">    ↓ java xx</span><span class="line">程序执行</span></code></pre>
+        <hr />
+        <h2>三、包的概念和使用</h2>
+        <h3>核心规则</h3>
+        <ul><li><p><strong>同一个包内的类可以直接使用</strong></p></li><li><p><strong>不同包中的类，需要通过 <code>import</code> 引入</strong></p></li><li><p><code>package</code> 名称必须和文件夹路径一致</p></li><li><p><code>import</code> 后面跟完整类名，或使用 <code>*</code> 批量引入</p></li></ul>
+        <pre class="shiki shiki-themes github-light github-dark" style="--shiki-dark-bg:#24292e;--shiki-dark:#e1e4e8" tabindex="0"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">package</span><span> com.demo.start;</span></span><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span> com.demo.service.Calculator;</span></span><span class="line"></span><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Start</span><span> { }</span></span></code></pre>
+        <h3>知识点对照</h3>
+        <table data-blog-table="1" data-fit="container"><thead><tr><th><p>代码</p></th><th><p>对应知识点</p></th></tr></thead><tbody><tr><td><p><code>package com.demo.service;</code></p></td><td><p>定义包</p></td></tr><tr><td><p><code>import com.demo.service.Calculator;</code></p></td><td><p>跨包引入类</p></td></tr><tr><td><p><code>public class</code></p></td><td><p>定义公开类</p></td></tr><tr><td><p><code>public static void main</code></p></td><td><p>程序入口方法</p></td></tr></tbody></table>
+        <hr />
+        <h2>四、记忆口诀</h2>
+        <pre class="shiki shiki-themes github-light github-dark" style="--shiki-dark-bg:#24292e;--shiki-dark:#e1e4e8" tabindex="0"><code><span class="line">Java 先有类，方法属性放里面。</span><span class="line">程序要运行，main 方法是起点。</span><span class="line">文件要编译，javac 先生成 class。</span><span class="line">类在不同包，import 引进来。</span><span class="line">权限看修饰，public 最大 private 最小。</span></code></pre>
+      </section>
+      <footer class="article-end"><span class="seal">完</span></footer>
+      <p class="footnote">本地文章预览样式原型 · 可直接双击打开 · 支持深浅色切换与阅读进度</p>
+    </article>
+  </main>
+  <script>
+    const root = document.body
+    const progress = document.querySelector('.reading-progress')
+    const updateProgress = () => {
+      const height = document.documentElement.scrollHeight - window.innerHeight
+      progress.style.transform = `scaleX(${height > 0 ? window.scrollY / height : 0})`
+    }
+    window.addEventListener('scroll', updateProgress, { passive: true })
+    updateProgress()
+    document.querySelector('.theme-switch').addEventListener('click', () => root.classList.toggle('dark'))
+  </script>
+</body>
+</html>

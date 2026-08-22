@@ -1,4 +1,4 @@
-import { ArticleStatus, CodeTheme, CommentStatus, ContentFormat } from '@xlt-blog/shared'
+import { ArticleStatus, CodeTheme, CommentStatus, EditorType } from '@xlt-blog/shared'
 import { Type } from 'class-transformer'
 import {
   IsArray,
@@ -71,11 +71,11 @@ export class SaveArticleDto {
 
   @IsString()
   @MaxLength(2_000_000)
-  content!: string
+  rawContent!: string
 
   @IsOptional()
-  @IsEnum(ContentFormat)
-  contentFormat?: ContentFormat
+  @IsEnum(EditorType)
+  editorType?: EditorType
 
   @IsOptional()
   @IsEnum(CodeTheme)
@@ -305,15 +305,30 @@ export class SavePageDto {
   slug!: string
 
   @IsString()
-  content!: string
+  @MaxLength(2_000_000)
+  rawContent!: string
 
   @IsOptional()
-  @IsEnum(ContentFormat)
-  contentFormat?: ContentFormat
+  @IsEnum(EditorType)
+  editorType?: EditorType
 
   @IsOptional()
   @IsEnum(ArticleStatus)
   status?: ArticleStatus
+}
+
+/** 内容预览：三个编辑器共用的实时预览接口（与保存共用同一渲染管线） */
+export class PreviewContentDto {
+  @IsEnum(EditorType)
+  editorType!: EditorType
+
+  @IsString()
+  @MaxLength(2_000_000)
+  rawContent!: string
+
+  @IsOptional()
+  @IsEnum(CodeTheme)
+  codeTheme?: CodeTheme
 }
 
 export class SaveFriendLinkDto {

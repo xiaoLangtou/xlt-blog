@@ -10,4 +10,10 @@ export * from './casbin'
 export * from './logger'
 export * from './cache'
 export * from './common'
-export * from './org-selector'
+// org-selector 的 fetchGetDeptDetail 与 ./dept' 重名，显式排除避免导出歧义
+export {
+  fetchGetDeptChildren,
+  fetchGetDeptEmployees,
+  fetchSearchOrg,
+  fetchGetEmployeesByIds
+} from './org-selector'

@@ -5,6 +5,7 @@
       title: '500',
       desc: $t('exceptionPage.500'),
       btnText: $t('exceptionPage.gohome'),
+      loginBtnText: $t('exceptionPage.goLogin'),
       imgUrl
     }"
   />

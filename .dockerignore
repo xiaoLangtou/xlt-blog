@@ -1,0 +1,42 @@
+# 依赖与构建产物（镜像内重新生成）
+node_modules
+**/node_modules
+
+# 允许本地编译产物进入 build context
+!apps/server/dist
+!packages/shared/dist
+!apps/art-design-pro/dist
+!apps/web/.output
+**/.nuxt
+**/.auto-import.json
+
+# 版本控制与编辑器
+.git
+.gitignore
+.gitattributes
+.DS_Store
+**/.idea
+**/.vscode
+**/.claude
+**/.qoder
+**/.mimocode
+**/.zcode
+**/.dsh-vision-router
+**/.husky/_/
+
+# 日志与临时
+**/*.log
+apps/server/uploads
+apps/server/temp
+
+# 开发环境变量（生产通过 docker-compose env_file 注入，不打包进镜像）
+apps/server/.env
+apps/web/.env
+# 注意：apps/art-design-pro/.env* 保留（后台构建需要 VITE_* 变量）
+
+# 文档与原型（不参与运行）
+原型
+docs
+EDITOR_STYLES_REDESIGN.md
+MEDIA_PREVIEW_FEATURE.md
+README.md

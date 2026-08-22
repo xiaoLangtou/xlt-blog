@@ -1,0 +1,413 @@
+/**
+ * 后台文章预览样式（渲染态）
+ *
+ * 说明：预览正文是后端返回的安全 HTML（v-html），DOM 中没有可挂 class 的模板节点，
+ * 因此无法用 Tailwind 原子类 / prose 逐元素控制，只能按标签编写样式。
+ * 这里统一维护一份定义，避免多块 .article-content-preview 互相覆盖导致的样式冲突。
+ * 颜色一律走主题变量，自动适配明暗模式。
+ */
+
+.article-content-preview {
+  font-size: 16px;
+  line-height: 1.78;
+
+  /* 基础：补齐 Tailwind preflight 清除的项（列表符号/缩进、标题字重） */
+  strong,
+  b {
+    font-weight: 700;
+  }
+  ul {
+    padding-left: 1.45em;
+    list-style: disc;
+  }
+  ol {
+    padding-left: 1.45em;
+    list-style: decimal;
+  }
+  ul ul {
+    list-style: circle;
+  }
+
+  /* 标题：宋体 + 黛蓝层级 + 朱砂章节引导线 */
+  h2 {
+    position: relative;
+    margin: 48px 0 17px;
+    padding: 0 0 9px 18px;
+    border-bottom: 1px solid var(--default-border);
+    color: var(--color-prose-headings);
+    font-family: Georgia, 'Songti SC', 'Noto Serif CJK SC', SimSun, serif;
+    font-weight: 700;
+    font-size: clamp(25px, 3.6vw, 31px);
+    line-height: 1.4;
+    letter-spacing: 0.05em;
+  }
+  h2::before {
+    position: absolute;
+    top: 0.3em;
+    left: 0;
+    width: 4px;
+    height: 1.1em;
+    content: '';
+    background: var(--theme-color);
+  }
+  h2:first-child {
+    margin-top: 0;
+  }
+  h3 {
+    margin: 28px 0 9px;
+    color: var(--theme-color);
+    font-family: Georgia, 'Songti SC', 'Noto Serif CJK SC', SimSun, serif;
+    font-weight: 700;
+    font-size: 21px;
+    line-height: 1.45;
+    letter-spacing: 0.04em;
+  }
+  h4 {
+    margin: 21px 0 6px;
+    font-weight: 650;
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  /* 正文与列表间距 */
+  p {
+    margin: 9px 0;
+  }
+  ul,
+  ol {
+    margin: 10px 0;
+  }
+  li {
+    margin: 3px 0;
+  }
+  li::marker {
+    color: var(--theme-color);
+    font-weight: 700;
+  }
+
+  /* 链接 */
+  a {
+    color: var(--theme-color);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--theme-color) 40%, transparent);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+
+    &:hover {
+      text-decoration-color: var(--theme-color);
+    }
+  }
+
+  /* 代码：行内 chip 与代码块（语法色由 Shiki 内联提供） */
+  code,
+  pre {
+    font-family: var(--font-family-mono);
+  }
+  :not(pre) > code {
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    color: var(--article-ink);
+    background: var(--default-box-color);
+    font-size: 0.9em;
+  }
+  pre {
+    margin: 16px 0;
+    padding: 17px 21px;
+    overflow-x: auto;
+    border: 1px solid var(--default-border);
+    border-radius: 5px;
+    box-shadow: inset 3px 0 var(--theme-color);
+    font-size: 13px;
+    line-height: 1.65;
+
+    code {
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      font-size: inherit;
+      line-height: inherit;
+    }
+  }
+
+  /* 引用块 */
+  blockquote {
+    border-left: 4px solid var(--theme-color);
+    color: var(--art-gray-700);
+    font-style: italic;
+  }
+
+  /* 表格 */
+  table {
+    display: block;
+    width: 100%;
+    margin: 18px 0;
+    overflow-x: auto;
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    padding: 9px 13px;
+    border: 1px solid var(--default-border);
+  }
+  th {
+    background: var(--art-gray-50);
+    font-weight: 700;
+  }
+
+  /* 图片 */
+  img {
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
+  }
+
+  /* 分隔符：居中朱砂 ※ */
+  hr {
+    position: relative;
+    height: 14px;
+    margin: 22px 0 0;
+    border: 0;
+    text-align: center;
+  }
+  hr::before {
+    position: absolute;
+    top: 7px;
+    right: 0;
+    left: 0;
+    height: 1px;
+    content: '';
+    background: var(--default-border);
+  }
+  hr::after {
+    position: relative;
+    z-index: 1;
+    padding: 0 13px;
+    content: '※';
+    color: var(--theme-color);
+    background: var(--default-bg-color);
+    font-size: 16px;
+  }
+  hr + h2 {
+    margin: 0 0 17px;
+  }
+
+  /* Details/Summary 折叠块 */
+  details {
+    margin: 16px 0;
+    padding: 1em 1.25em;
+    background: var(--art-gray-50);
+    border: 1px solid var(--default-border);
+    border-radius: 8px;
+
+    summary {
+      margin: -1em -1.25em;
+      padding: 1em 1.25em;
+      border-radius: 7px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background: var(--art-hover-color);
+      }
+    }
+
+    &[open] summary {
+      margin-bottom: 0.75em;
+      border-bottom: 1px solid var(--default-border);
+    }
+  }
+
+  /* 任务列表 */
+  ul[data-type='taskList'] {
+    padding-left: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5em;
+      padding-left: 0;
+
+      &::before {
+        display: none;
+      }
+
+      > label {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        margin-top: 0.25em;
+      }
+
+      > div {
+        flex: 1;
+        min-width: 0;
+
+        > p {
+          margin: 0;
+        }
+      }
+
+      input[type='checkbox'] {
+        width: 1em;
+        height: 1em;
+        margin: 0;
+        accent-color: var(--theme-color);
+        cursor: pointer;
+      }
+    }
+  }
+
+  /* 文本对齐 */
+  [data-align='left'] {
+    text-align: left;
+  }
+  [data-align='center'] {
+    text-align: center;
+  }
+  [data-align='right'] {
+    text-align: right;
+  }
+  [data-align='justify'] {
+    text-align: justify;
+  }
+
+  /* Notion 风格块 / 文本颜色（Domternal 编辑器，亮色） */
+  [data-bg-color='gray'] {
+    background-color: #f1f1ef;
+  }
+  [data-bg-color='brown'] {
+    background-color: #f3eeee;
+  }
+  [data-bg-color='orange'] {
+    background-color: #f8ecdf;
+  }
+  [data-bg-color='yellow'] {
+    background-color: #faf3dd;
+  }
+  [data-bg-color='green'] {
+    background-color: #eef3ed;
+  }
+  [data-bg-color='blue'] {
+    background-color: #e9f3f7;
+  }
+  [data-bg-color='purple'] {
+    background-color: #f6f3f8;
+  }
+  [data-bg-color='pink'] {
+    background-color: #f9f2f5;
+  }
+  [data-bg-color='red'] {
+    background-color: #faecec;
+  }
+  [data-text-color='gray'] {
+    color: #787774;
+  }
+  [data-text-color='brown'] {
+    color: #976d57;
+  }
+  [data-text-color='orange'] {
+    color: #cc782f;
+  }
+  [data-text-color='yellow'] {
+    color: #c29343;
+  }
+  [data-text-color='green'] {
+    color: #548164;
+  }
+  [data-text-color='blue'] {
+    color: #487ca5;
+  }
+  [data-text-color='purple'] {
+    color: #8a67ab;
+  }
+  [data-text-color='pink'] {
+    color: #b35488;
+  }
+  [data-text-color='red'] {
+    color: #c4554d;
+  }
+}
+
+/* ========== 暗色模式适配 ========== */
+.dark .article-content-preview {
+  .shiki,
+  .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+  }
+
+  [data-bg-color='gray'] {
+    background-color: #2f2f2f;
+  }
+  [data-bg-color='brown'] {
+    background-color: #4a3228;
+  }
+  [data-bg-color='orange'] {
+    background-color: #5c3b1e;
+  }
+  [data-bg-color='yellow'] {
+    background-color: #564328;
+  }
+  [data-bg-color='green'] {
+    background-color: #243d30;
+  }
+  [data-bg-color='blue'] {
+    background-color: #143a4e;
+  }
+  [data-bg-color='purple'] {
+    background-color: #3c2d49;
+  }
+  [data-bg-color='pink'] {
+    background-color: #4e2c3c;
+  }
+  [data-bg-color='red'] {
+    background-color: #5c1e1e;
+  }
+  [data-text-color='gray'] {
+    color: #9b9a97;
+  }
+  [data-text-color='brown'] {
+    color: #ba856f;
+  }
+  [data-text-color='orange'] {
+    color: #d68a52;
+  }
+  [data-text-color='yellow'] {
+    color: #ca9849;
+  }
+  [data-text-color='green'] {
+    color: #6db285;
+  }
+  [data-text-color='blue'] {
+    color: #7a9bd6;
+  }
+  [data-text-color='purple'] {
+    color: #a877d8;
+  }
+  [data-text-color='pink'] {
+    color: #dc6da4;
+  }
+  [data-text-color='red'] {
+    color: #df5452;
+  }
+}
+
+@media (max-width: 640px) {
+  .article-content-preview {
+    font-size: 15.5px;
+  }
+  .article-content-preview h2 {
+    margin-top: 39px;
+    font-size: 25px;
+  }
+  .article-content-preview h3 {
+    margin-top: 25px;
+    font-size: 20px;
+  }
+  .article-content-preview pre {
+    padding: 15px 16px;
+    font-size: 12px;
+  }
+}

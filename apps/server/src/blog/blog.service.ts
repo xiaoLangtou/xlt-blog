@@ -43,7 +43,7 @@ export class BlogService {
 
     const [items, total] = await this.em.findAndCount(Article, where, {
       populate: ['category', 'tags'],
-      exclude: ['content'],
+      exclude: ['rawContent', 'renderHtml'],
       orderBy: { publishedAt: 'DESC' },
       limit: pageSize,
       offset: (page - 1) * pageSize
@@ -61,7 +61,9 @@ export class BlogService {
     // 简单浏览计数（不做去重）
     article.views += 1
     await this.em.flush()
-    return article
+    // 公开接口不返回 rawContent / rendererVersion，仅返回渲染结果
+    const { rawContent, rendererVersion, ...dto } = serialize(article)
+    return dto
   }
 
   async listCategories() {
@@ -199,7 +201,8 @@ export class BlogService {
   async getPageBySlug(slug: string) {
     const page = await this.em.findOne(Page, { slug, status: ArticleStatus.Published })
     if (!page) throw new NotFoundException('页面不存在')
-    return page
+    const { rawContent, rendererVersion, ...dto } = serialize(page)
+    return dto
   }
 }
 

@@ -563,7 +563,7 @@
         <ElButton
           v-if="detailItem && detailItem.status !== 'pending'"
           type="primary"
-          @click="sendReply"
+          @click="sendReply()"
         >
           回复
         </ElButton>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import type { ArticleDetailDto } from '@xlt-blog/shared'
-  import { renderMarkdown } from '~/utils/markdown'
 
   const props = defineProps<{
     slug: string
@@ -8,35 +7,10 @@
 
   const isOpen = defineModel<boolean>('open', { required: true })
 
+  // 正文为后端统一渲染的安全 HTML，无需前台再加工
   const { data: article, status } = useApi<ArticleDetailDto>(`/articles/${props.slug}`, {
     immediate: computed(() => isOpen.value)
   })
-
-  const renderedContent = ref('')
-  const renderingContent = ref(false)
-  const renderError = ref(false)
-
-  watch(
-    () => [article.value?.content, article.value?.codeTheme, article.value?.contentFormat] as const,
-    async ([content, codeTheme, contentFormat]) => {
-      if (!content) {
-        renderedContent.value = ''
-        return
-      }
-
-      renderingContent.value = true
-      renderError.value = false
-      try {
-        renderedContent.value = await renderMarkdown(content, codeTheme, contentFormat)
-      } catch {
-        renderedContent.value = ''
-        renderError.value = true
-      } finally {
-        renderingContent.value = false
-      }
-    },
-    { immediate: true }
-  )
 
   function formatDate(value: string | null) {
     if (!value) return ''
@@ -98,15 +72,12 @@
           />
         </div>
 
-        <!-- 文章内容预览 -->
-        <div class="markdown-body max-h-[52vh] overflow-y-auto pr-2 text-muted leading-relaxed">
-          <div v-if="renderingContent" class="space-y-4">
-            <USkeleton class="h-4 w-full" />
-            <USkeleton class="h-4 w-5/6" />
-            <USkeleton class="h-4 w-2/3" />
-          </div>
-          <p v-else-if="renderError" class="text-muted">文章内容渲染失败</p>
-          <div v-else v-html="renderedContent" />
+        <!-- 文章内容预览：后端渲染的安全 HTML -->
+        <div
+          class="article-content max-h-[52vh] overflow-y-auto pr-2 text-muted leading-relaxed"
+          :class="`editor-${article.editorType}`"
+        >
+          <div v-html="article.renderHtml" />
         </div>
 
         <!-- 底部操作 -->

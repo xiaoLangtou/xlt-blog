@@ -1,3 +1,10 @@
+/**
+ * TipTap 编辑器工具栏和辅助组件样式
+ * 内容区域样式已移至 assets/styles/custom/editor-tiptap.scss
+ */
+
+/* ========== 工具栏样式 ========== */
+
 .simple-toolbar {
   display: flex;
   gap: 2px;
@@ -89,9 +96,6 @@
   color: var(--art-gray-600);
   text-align: center;
 }
-
-/* .table-grid-picker 的样式已迁移到 TableGridPicker.vue 的 scoped <style> 中，
-   此处不再保留全局规则，避免与组件内固定尺寸网格冲突。 */
 
 .table-menu {
   display: grid;
@@ -190,3 +194,97 @@
     width: min(100%, 260px);
   }
 }
+
+/* ========== 代码块组件样式 ========== */
+
+.code-block {
+  position: relative;
+  margin: 1.5em 0;
+  padding: 1em;
+  overflow: visible;
+  font-family: var(--art-font-family-code, 'Consolas', 'Monaco', monospace);
+  font-size: 0.9em;
+  line-height: 1.6;
+  background: var(--art-gray-100);
+  border: 1px solid var(--default-border);
+  border-radius: 6px;
+
+  &:hover .code-block__actions {
+    opacity: 1;
+  }
+}
+
+.code-block__language-label {
+  display: none;
+}
+
+.code-block__actions {
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.code-block--menu-open .code-block__actions {
+  opacity: 1;
+}
+
+.code-block__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--art-gray-700);
+  cursor: pointer;
+  background: var(--default-box-color);
+  border: 1px solid var(--default-border);
+  border-radius: 4px;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) {
+    color: var(--art-gray-900);
+    background: var(--art-hover-color);
+    border-color: var(--theme-color);
+  }
+
+  &:disabled {
+    color: var(--art-gray-500);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .art-svg-icon {
+    font-size: 14px;
+  }
+}
+
+.code-block__language {
+  span {
+    margin-right: 2px;
+  }
+}
+
+.code-block__icon-action {
+  min-width: 28px;
+  padding: 0 6px;
+}
+
+.code-block code {
+  display: block;
+  padding: 0;
+  margin-top: 2em;
+  overflow-x: auto;
+  background: transparent;
+  border: none;
+
+  span {
+    display: inline;
+  }
+}
+

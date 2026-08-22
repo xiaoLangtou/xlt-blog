@@ -29,7 +29,11 @@ export class AuthController {
   @XltCheckLogin()
   @Get('me')
   async me(@LoginId() loginId: string) {
-    return this.em.findOneOrFail(User, { id: Number(loginId) })
+    const user = await this.em.findOne(User, { id: Number(loginId) })
+    if (!user) {
+      throw new UnauthorizedException('登录已失效，请重新登录')
+    }
+    return user
   }
 
   @XltCheckLogin()

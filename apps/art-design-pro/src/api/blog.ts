@@ -149,5 +149,13 @@ export const blogApi = {
         }
       }
     })
+  },
+
+  /** 内容预览：与保存共用服务端渲染管线（转换 + 净化 + Shiki） */
+  previewContent(params: Api.Blog.PreviewContentParams) {
+    return request.post<Api.Blog.PreviewContentResult>({
+      url: '/admin/content/preview',
+      params
+    })
   }
 }

@@ -25,6 +25,7 @@ import {
   AdminColumnQueryDto,
   AdminCommentQueryDto,
   AdminTagQueryDto,
+  PreviewContentDto,
   ReplyCommentDto,
   SaveAdminMenuDto,
   SaveArticleDto,
@@ -73,6 +74,18 @@ export class AdminController {
   @Post("articles")
   createArticle(@Body() dto: SaveArticleDto) {
     return this.adminService.createArticle(dto);
+  }
+
+  /** 内容实时预览：三编辑器共用，与保存同一渲染管线 */
+  @Post("content/preview")
+  previewContent(@Body() dto: PreviewContentDto) {
+    return this.adminService.previewContent(dto);
+  }
+
+  /** 批量重渲染：转换器/白名单升级后回刷存量文章与页面 */
+  @Post("content/rerender")
+  rerenderContent() {
+    return this.adminService.rerenderOutdatedContent();
   }
 
   @Put("articles/:id")

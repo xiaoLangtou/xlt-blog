@@ -1,0 +1,109 @@
+# 生产编排文件（源码构建方式）
+# 用法：
+#   1) cp deploy/.env.prod.example deploy/.env.prod  并按实际修改
+#   2) docker compose --env-file deploy/.env.prod -f deploy/docker-compose.prod.yml up -d --build
+#
+# 数据库与缓存使用 1Panel 管理的外部容器（1Panel-mysql-Blf7 / 1Panel-redis-VR85），
+# 通过 1panel-network 外部网络互通；本编排不再自建 mysql / redis。
+#
+# 服务拓扑：
+#   nginx(80) ─┬─ /admin/  -> admin:80（独立后台静态容器）
+#              ├─ /api/   -> server:3000
+#              ├─ /uploads/ -> server:3000
+#              └─ /       -> web:3001 (Nuxt SSR)
+#   server ─-> 1Panel-mysql-Blf7 / 1Panel-redis-VR85（1panel-network）
+
+name: xlt-blog
+
+networks:
+  1panel-network:
+    name: ${NETWORK_NAME:-1panel-network}
+    external: true
+
+services:
+  # ============ 站点入口（反向代理）============
+  nginx:
+    image: nginx:alpine
+    container_name: xlt-blog-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      # 如需 HTTPS，取消注释并准备证书（见部署方案.md）
+      # - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - 1panel-network
+    depends_on:
+      - server
+      - web
+      - admin
+
+  # ============ 应用服务 ============
+  server:
+    build:
+      context: ..
+      dockerfile: deploy/server.Dockerfile
+    container_name: xlt-blog-server
+    restart: unless-stopped
+    environment:
+      # 连接 1Panel 管理的外部 MySQL（1Panel-mysql-Blf7）
+      DB_HOST: 1Panel-mysql-Blf7
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-xlt_blog}
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      NODE_ENV: production
+      PORT: ${PORT:-3000}
+      UPLOAD_DIR: ${UPLOAD_DIR:-uploads}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # 连接 1Panel 管理的外部 Redis（1Panel-redis-VR85）
+      REDIS_URL: redis://:${REDIS_PASSWORD}@1Panel-redis-VR85:6379
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.openai.com/v1}
+      AI_MODEL: ${AI_MODEL:-gpt-4o-mini}
+    volumes:
+      # 上传文件持久化（对应 UPLOAD_DIR=uploads，cwd=/repo -> /repo/uploads）
+      - uploads:/repo/uploads
+    networks:
+      - 1panel-network
+    expose:
+      - "3000"
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/web.Dockerfile
+    container_name: xlt-blog-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Nuxt node-server 监听端口（默认 3000，这里显式对齐 nginx 反代目标）
+      NITRO_PORT: 3001
+      NITRO_HOST: 0.0.0.0
+      # 仅服务端（SSR 容器内部直连后端，走 docker 网络）
+      NUXT_API_BASE: http://server:3000/api
+      NUXT_API_SERVER: http://server:3000
+      # 浏览器端（同源 /api，由 nginx 反代到后端）
+      NUXT_PUBLIC_API_BASE: /api
+      # 站点对外地址（sitemap / SEO）
+      NUXT_PUBLIC_SITE_URL: ${SITE_URL}
+    networks:
+      - 1panel-network
+    expose:
+      - "3001"
+
+  admin:
+    build:
+      context: ..
+      dockerfile: deploy/admin.Dockerfile
+    container_name: xlt-blog-admin
+    restart: unless-stopped
+    networks:
+      - 1panel-network
+    expose:
+      - "80"
+
+volumes:
+  uploads:

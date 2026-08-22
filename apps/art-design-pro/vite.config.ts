@@ -44,6 +44,15 @@ export default ({ mode }: { mode: string }) => {
     },
     // 路径别名
     resolve: {
+      dedupe: [
+        '@domternal/core',
+        '@domternal/pm',
+        'prosemirror-model',
+        'prosemirror-state',
+        'prosemirror-transform',
+        'prosemirror-view',
+        'prosemirror-tables'
+      ],
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
         '@views': resolvePath('src/views'),
@@ -141,6 +150,12 @@ export default ({ mode }: { mode: string }) => {
         'crypto-js',
         'file-saver',
         'vue-img-cutter',
+        '@domternal/core',
+        '@domternal/vue',
+        '@domternal/extension-block-controls',
+        '@domternal/extension-code-block-lowlight',
+        '@domternal/extension-image',
+        '@domternal/extension-table',
         'element-plus/es',
         'element-plus/es/components/*/style/css',
         'element-plus/es/components/*/style/index',

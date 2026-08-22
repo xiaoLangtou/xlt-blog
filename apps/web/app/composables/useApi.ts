@@ -11,7 +11,7 @@ export function useApi<T>(
 ) {
   const config = useRuntimeConfig()
   return useFetch(path, {
-    baseURL: config.public.apiBase,
+    baseURL: import.meta.server ? config.apiBase : config.public.apiBase,
     ...options,
     transform: (res: ApiResponse<T>) => res.data
   } as any) as ReturnType<typeof useFetch<T>>

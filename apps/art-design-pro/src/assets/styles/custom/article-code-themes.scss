@@ -283,3 +283,182 @@
 .code-theme-atom .hljs-strong {
   font-weight: 700;
 }
+
+/* Shiki 双主题（服务端渲染产物：后台预览）：暗色模式切换
+   —— 服务端输出 light 主题内联色 + --shiki-dark 变量，这里按暗色切换 */
+.dark .markdown-preview .shiki,
+.dark .markdown-preview .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+.dark .markdown-preview .shiki span {
+  background-color: transparent !important;
+}
+
+/* ---------- 富文本特性（后台预览）：对齐 / 块颜色 / 任务列表 / 表格底色 ----------
+   与前台 main.css 的渲染规则保持一致，保证预览 = 发布效果 */
+.markdown-preview [data-align='left'] {
+  text-align: left;
+}
+.markdown-preview [data-align='center'] {
+  text-align: center;
+}
+.markdown-preview [data-align='right'] {
+  text-align: right;
+}
+.markdown-preview [data-align='justify'] {
+  text-align: justify;
+}
+
+.markdown-preview th[data-background='red'],
+.markdown-preview td[data-background='red'] {
+  background: color-mix(in srgb, #ef4444 12%, var(--default-box-color));
+}
+.markdown-preview th[data-background='green'],
+.markdown-preview td[data-background='green'] {
+  background: color-mix(in srgb, #22c55e 12%, var(--default-box-color));
+}
+.markdown-preview th[data-background='purple'],
+.markdown-preview td[data-background='purple'] {
+  background: color-mix(in srgb, #a855f7 12%, var(--default-box-color));
+}
+
+.markdown-preview [data-bg-color='gray'] {
+  background-color: #f1f1ef;
+}
+.markdown-preview [data-bg-color='brown'] {
+  background-color: #f3eeee;
+}
+.markdown-preview [data-bg-color='orange'] {
+  background-color: #f8ecdf;
+}
+.markdown-preview [data-bg-color='yellow'] {
+  background-color: #faf3dd;
+}
+.markdown-preview [data-bg-color='green'] {
+  background-color: #eef3ed;
+}
+.markdown-preview [data-bg-color='blue'] {
+  background-color: #e9f3f7;
+}
+.markdown-preview [data-bg-color='purple'] {
+  background-color: #f6f3f8;
+}
+.markdown-preview [data-bg-color='pink'] {
+  background-color: #f9f2f5;
+}
+.markdown-preview [data-bg-color='red'] {
+  background-color: #faecec;
+}
+.dark .markdown-preview [data-bg-color='gray'] {
+  background-color: #2f2f2f;
+}
+.dark .markdown-preview [data-bg-color='brown'] {
+  background-color: #4a3228;
+}
+.dark .markdown-preview [data-bg-color='orange'] {
+  background-color: #5c3b1e;
+}
+.dark .markdown-preview [data-bg-color='yellow'] {
+  background-color: #564328;
+}
+.dark .markdown-preview [data-bg-color='green'] {
+  background-color: #243d30;
+}
+.dark .markdown-preview [data-bg-color='blue'] {
+  background-color: #143a4e;
+}
+.dark .markdown-preview [data-bg-color='purple'] {
+  background-color: #3c2d49;
+}
+.dark .markdown-preview [data-bg-color='pink'] {
+  background-color: #4e2c3c;
+}
+.dark .markdown-preview [data-bg-color='red'] {
+  background-color: #5c1e1e;
+}
+.markdown-preview [data-text-color='gray'] {
+  color: #787774;
+}
+.markdown-preview [data-text-color='brown'] {
+  color: #976d57;
+}
+.markdown-preview [data-text-color='orange'] {
+  color: #cc782f;
+}
+.markdown-preview [data-text-color='yellow'] {
+  color: #c29343;
+}
+.markdown-preview [data-text-color='green'] {
+  color: #548164;
+}
+.markdown-preview [data-text-color='blue'] {
+  color: #487ca5;
+}
+.markdown-preview [data-text-color='purple'] {
+  color: #8a67ab;
+}
+.markdown-preview [data-text-color='pink'] {
+  color: #b35488;
+}
+.markdown-preview [data-text-color='red'] {
+  color: #c4554d;
+}
+.dark .markdown-preview [data-text-color='gray'] {
+  color: #9b9a97;
+}
+.dark .markdown-preview [data-text-color='brown'] {
+  color: #ba856f;
+}
+.dark .markdown-preview [data-text-color='orange'] {
+  color: #d68a52;
+}
+.dark .markdown-preview [data-text-color='yellow'] {
+  color: #ca9849;
+}
+.dark .markdown-preview [data-text-color='green'] {
+  color: #6db285;
+}
+.dark .markdown-preview [data-text-color='blue'] {
+  color: #7a9bd6;
+}
+.dark .markdown-preview [data-text-color='purple'] {
+  color: #a877d8;
+}
+.dark .markdown-preview [data-text-color='pink'] {
+  color: #dc6da4;
+}
+.dark .markdown-preview [data-text-color='red'] {
+  color: #df5452;
+}
+
+.markdown-preview ul[data-type='taskList'] {
+  padding-left: 0;
+  list-style: none;
+}
+.markdown-preview ul[data-type='taskList'] ul[data-type='taskList'] {
+  margin: 0.25em 0 0.25em 1.4em;
+}
+.markdown-preview ul[data-type='taskList'] li {
+  display: flex;
+  gap: 0.55em;
+}
+.markdown-preview ul[data-type='taskList'] li > label {
+  flex: 0 0 auto;
+  user-select: none;
+}
+.markdown-preview ul[data-type='taskList'] input[type='checkbox'] {
+  width: 1em;
+  height: 1em;
+  margin: 0.35em 0 0;
+  accent-color: var(--theme-color);
+  cursor: default;
+}
+.markdown-preview ul[data-type='taskList'] li > div {
+  flex: 1;
+  min-width: 0;
+}
+.markdown-preview ul[data-type='taskList'] li > div > p {
+  margin: 0;
+}

@@ -4,17 +4,18 @@ import {
   ArticleStatus,
   CodeTheme,
   CommentStatus,
-  ContentFormat,
+  CURRENT_RENDERER_VERSION,
   DashboardStats,
   DEFAULT_MENUS,
   DEFAULT_THEME_COLOR,
+  EditorType,
   MenuItemConfig,
-  normalizeArticleContent,
   SiteConfig,
   THEME_COLORS
 } from '@xlt-blog/shared'
 import { unlink } from 'node:fs/promises'
 import { basename, join } from 'node:path'
+import { renderContentHtml } from '../content/content-renderer'
 import {
   Article,
   Attachment,
@@ -34,6 +35,7 @@ import {
   AdminColumnQueryDto,
   AdminCommentQueryDto,
   AdminTagQueryDto,
+  PreviewContentDto,
   SaveAdminMenuDto,
   SaveArticleDto,
   SaveCategoryDto,
@@ -62,7 +64,7 @@ export class AdminService {
 
     const [items, total] = await this.em.findAndCount(Article, where, {
       populate: ['category', 'tags'],
-      exclude: ['content'],
+      exclude: ['rawContent', 'renderHtml'],
       orderBy: { createdAt: 'DESC' },
       limit: pageSize,
       offset: (page - 1) * pageSize
@@ -103,13 +105,22 @@ export class AdminService {
     article.title = dto.title
     article.slug = dto.slug
     article.summary = dto.summary ?? null
-    article.contentFormat = dto.contentFormat ?? article.contentFormat ?? ContentFormat.Html
+    article.editorType = dto.editorType ?? article.editorType ?? EditorType.TIPTAP
+    // codeTheme 参与渲染（Shiki 主题），先落位再生成 renderHtml
+    article.codeTheme = dto.codeTheme ?? article.codeTheme ?? CodeTheme.Github
+    // 转换 + 净化在后端统一完成（方案 3.1/3.2）：rawContent 原样保存，
+    // renderHtml 由 renderContentHtml 生成，二者在随后的同一次 flush 中落库。
     try {
-      article.content = normalizeArticleContent(dto.content, article.contentFormat)
+      article.renderHtml = await renderContentHtml(
+        article.editorType,
+        dto.rawContent,
+        article.codeTheme
+      )
     } catch (error) {
       throw new BadRequestException(error instanceof Error ? error.message : '文章内容格式无效')
     }
-    article.codeTheme = dto.codeTheme ?? article.codeTheme ?? CodeTheme.Github
+    article.rawContent = dto.rawContent
+    article.rendererVersion = CURRENT_RENDERER_VERSION
     article.cover = dto.cover ?? null
     article.category = dto.categoryId
       ? await this.em.findOneOrFail(Category, { id: dto.categoryId })
@@ -124,6 +135,57 @@ export class AdminService {
       article.publishedAt = new Date()
     }
     article.status = nextStatus
+  }
+
+  /** 内容预览：与保存走完全相同的渲染管线，保证预览即最终效果（方案第六节） */
+  async previewContent(dto: PreviewContentDto) {
+    try {
+      const html = await renderContentHtml(
+        dto.editorType,
+        dto.rawContent,
+        dto.codeTheme ?? CodeTheme.Github
+      )
+      return { html }
+    } catch (error) {
+      throw new BadRequestException(error instanceof Error ? error.message : '内容格式无效')
+    }
+  }
+
+  /** 批量重渲染：回刷 rendererVersion 落后的文章与页面（方案第九节） */
+  async rerenderOutdatedContent() {
+    const articles = await this.em.find(Article, {
+      rendererVersion: { $ne: CURRENT_RENDERER_VERSION }
+    })
+    const pages = await this.em.find(Page, {
+      rendererVersion: { $ne: CURRENT_RENDERER_VERSION }
+    })
+    let processed = 0
+    let failed = 0
+    for (const article of articles) {
+      try {
+        article.renderHtml = await renderContentHtml(
+          article.editorType,
+          article.rawContent,
+          article.codeTheme ?? CodeTheme.Github
+        )
+        article.rendererVersion = CURRENT_RENDERER_VERSION
+        processed++
+      } catch {
+        // 单篇失败不阻塞批量任务（如历史 raw 结构不合法）
+        failed++
+      }
+    }
+    for (const page of pages) {
+      try {
+        page.renderHtml = await renderContentHtml(page.editorType, page.rawContent)
+        page.rendererVersion = CURRENT_RENDERER_VERSION
+        processed++
+      } catch {
+        failed++
+      }
+    }
+    await this.em.flush()
+    return { processed, failed, total: articles.length + pages.length }
   }
 
   async setArticleStatus(id: number, status: ArticleStatus) {
@@ -537,7 +599,8 @@ export class AdminService {
   // ---------- 独立页面 ----------
 
   listPages() {
-    return this.em.find(Page, {}, { exclude: ['content'], orderBy: { createdAt: 'DESC' } })
+    // 页面数量少且弹窗编辑需要回填原文，列表保留 rawContent，仅排除体积大的 renderHtml
+    return this.em.find(Page, {}, { exclude: ['renderHtml'], orderBy: { createdAt: 'DESC' } })
   }
 
   async getPage(id: number) {
@@ -548,12 +611,14 @@ export class AdminService {
 
   async createPage(dto: SavePageDto) {
     await this.ensurePageSlugUnique(dto.slug)
-    const contentFormat = dto.contentFormat ?? ContentFormat.Html
+    const editorType = dto.editorType ?? EditorType.MD
     const page = this.em.create(Page, {
       title: dto.title,
       slug: dto.slug,
-      contentFormat,
-      content: this.normalizeContent(dto.content, contentFormat),
+      editorType,
+      renderHtml: await this.renderPageContent(editorType, dto.rawContent),
+      rawContent: dto.rawContent,
+      rendererVersion: CURRENT_RENDERER_VERSION,
       status: dto.status ?? ArticleStatus.Draft,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -567,16 +632,18 @@ export class AdminService {
     await this.ensurePageSlugUnique(dto.slug, id)
     page.title = dto.title
     page.slug = dto.slug
-    page.contentFormat = dto.contentFormat ?? page.contentFormat ?? ContentFormat.Html
-    page.content = this.normalizeContent(dto.content, page.contentFormat)
+    page.editorType = dto.editorType ?? page.editorType ?? EditorType.MD
+    page.renderHtml = await this.renderPageContent(page.editorType, dto.rawContent)
+    page.rawContent = dto.rawContent
+    page.rendererVersion = CURRENT_RENDERER_VERSION
     page.status = dto.status ?? page.status
     await this.em.flush()
     return page
   }
 
-  private normalizeContent(content: string, format: ContentFormat) {
+  private async renderPageContent(editorType: EditorType, rawContent: string) {
     try {
-      return normalizeArticleContent(content, format)
+      return await renderContentHtml(editorType, rawContent)
     } catch (error) {
       throw new BadRequestException(error instanceof Error ? error.message : '内容格式无效')
     }
@@ -650,7 +717,7 @@ export class AdminService {
       {},
       {
         populate: ['category', 'tags'],
-        exclude: ['content'],
+        exclude: ['rawContent', 'renderHtml'],
         orderBy: { createdAt: 'DESC' },
         limit: 5
       }

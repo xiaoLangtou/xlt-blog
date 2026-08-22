@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ==================== Light Mode Variables ==================== */
@@ -119,6 +120,27 @@
   --color-g-700: var(--art-gray-700);
   --color-g-800: var(--art-gray-800);
   --color-g-900: var(--art-gray-900);
+
+  /* Typography Plugin Configuration */
+  --font-family-sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-family-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+
+  /* Prose colors that adapt to dark mode */
+  --color-prose-body: var(--art-gray-900);
+  --color-prose-headings: var(--art-gray-900);
+  --color-prose-links: var(--theme-color);
+  --color-prose-bold: var(--art-gray-900);
+  --color-prose-counters: var(--art-gray-600);
+  --color-prose-bullets: var(--art-gray-500);
+  --color-prose-hr: var(--default-border);
+  --color-prose-quotes: var(--art-gray-700);
+  --color-prose-quote-borders: var(--theme-color);
+  --color-prose-captions: var(--art-gray-600);
+  --color-prose-code: var(--art-gray-800);
+  --color-prose-pre-code: var(--art-gray-900);
+  --color-prose-pre-bg: var(--art-gray-100);
+  --color-prose-th-borders: var(--default-border);
+  --color-prose-td-borders: var(--default-border);
 }
 
 /* ==================== Custom Border Radius Utilities ==================== */

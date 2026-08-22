@@ -1,8 +1,16 @@
 import type { EntityManager } from '@mikro-orm/mysql'
 import { Seeder } from '@mikro-orm/seeder'
-import { ArticleStatus, CodeTheme, ContentFormat, DEFAULT_MENUS, DEFAULT_THEME_COLOR } from '@xlt-blog/shared'
+import {
+  ArticleStatus,
+  CodeTheme,
+  CURRENT_RENDERER_VERSION,
+  DEFAULT_MENUS,
+  DEFAULT_THEME_COLOR,
+  EditorType
+} from '@xlt-blog/shared'
 import { hash } from 'bcryptjs'
 import { Article, Category, Setting, Tag, User } from '../entities'
+import { renderContentHtml } from '../content/content-renderer'
 
 export class DatabaseSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
@@ -36,26 +44,29 @@ export class DatabaseSeeder extends Seeder {
 
     const exists = await em.findOne(Article, { slug: 'hello-world' })
     if (!exists) {
+      const rawContent = [
+        '# Hello World',
+        '',
+        '欢迎来到 **xlt-blog**！这是一篇由 seeder 生成的示例文章。',
+        '',
+        '## 代码高亮示例',
+        '',
+        '```ts',
+        'const greet = (name: string) => `Hello, ${name}!`',
+        "console.log(greet('World'))",
+        '```',
+        '',
+        '> 你可以在管理后台编辑或删除这篇文章。'
+      ].join('\n')
       const article = em.create(Article, {
         title: 'Hello World',
         slug: 'hello-world',
         summary: '欢迎来到我的博客，这是第一篇示例文章。',
-        content: [
-          '# Hello World',
-          '',
-          '欢迎来到 **xlt-blog**！这是一篇由 seeder 生成的示例文章。',
-          '',
-          '## 代码高亮示例',
-          '',
-          '```ts',
-          'const greet = (name: string) => `Hello, ${name}!`',
-          "console.log(greet('World'))",
-          '```',
-          '',
-          '> 你可以在管理后台编辑或删除这篇文章。'
-        ].join('\n'),
+        rawContent,
+        renderHtml: await renderContentHtml(EditorType.MD, rawContent, CodeTheme.Github),
+        editorType: EditorType.MD,
+        rendererVersion: CURRENT_RENDERER_VERSION,
         codeTheme: CodeTheme.Github,
-        contentFormat: ContentFormat.Markdown,
         cover: null,
         status: ArticleStatus.Published,
         views: 0,

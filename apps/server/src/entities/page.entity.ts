@@ -1,5 +1,5 @@
 import { Entity, Enum, Index, PrimaryKey, Property } from '@mikro-orm/core'
-import { ArticleStatus, ContentFormat } from '@xlt-blog/shared'
+import { ArticleStatus, CURRENT_RENDERER_VERSION, EditorType } from '@xlt-blog/shared'
 
 @Entity({ tableName: 'pages' })
 export class Page {
@@ -12,13 +12,21 @@ export class Page {
   @Property({ unique: true })
   slug!: string
 
-  /** 正文原文（Markdown 或安全 HTML，取决于 contentFormat） */
+  /** 原始内容（编辑回填用）：页面编辑器固定 Markdown 源码 */
   @Property({ type: 'text', columnType: 'longtext' })
-  content!: string
+  rawContent!: string
 
-  /** 正文格式：markdown 或 html */
-  @Enum({ items: () => ContentFormat, default: ContentFormat.Html })
-  contentFormat: ContentFormat = ContentFormat.Html
+  /** 统一转换 + 净化后的安全 HTML（前台展示用） */
+  @Property({ type: 'text', columnType: 'longtext' })
+  renderHtml!: string
+
+  /** 页面内容编辑器类型（当前管理端为 Markdown 文本域） */
+  @Enum({ items: () => EditorType, default: EditorType.MD })
+  editorType: EditorType = EditorType.MD
+
+  /** 渲染器版本：转换器/白名单升级后批量重渲染用 */
+  @Property({ default: CURRENT_RENDERER_VERSION })
+  rendererVersion: number = CURRENT_RENDERER_VERSION
 
   @Index()
   @Enum({ items: () => ArticleStatus, default: ArticleStatus.Draft })

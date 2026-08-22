@@ -13,15 +13,12 @@
     "@nuxtjs/sitemap": "^8.3.0",
     "@vueuse/motion": "catalog:",
     "@xlt-blog/shared": "workspace:*",
-    "markdown-it": "^14.1.0",
     "nuxt": "^4.2.2",
-    "shiki": "^3.13.0",
     "vue": "^3.5.40",
     "vue-router": "^5.2.0"
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.120",
-    "@types/markdown-it": "^14.1.2",
     "typescript": "~5.9.0"
   }
 }
