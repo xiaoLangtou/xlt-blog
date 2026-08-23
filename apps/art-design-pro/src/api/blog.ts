@@ -25,6 +25,29 @@ export const blogApi = {
   deleteArticle(id: number) {
     return request.del<void>({ url: `/admin/articles/${id}` })
   },
+  importArticles(
+    files: File[],
+    defaults: Api.Blog.ImportArticleDefaults,
+    onProgress?: (percent: number) => void
+  ) {
+    const data = new FormData()
+    files.forEach((file) => data.append('files', file))
+    if (defaults.defaultCategoryId != null) {
+      data.append('defaultCategoryId', String(defaults.defaultCategoryId))
+    }
+    defaults.defaultTagIds?.forEach((id) => data.append('defaultTagIds', String(id)))
+    if (defaults.defaultStatus) data.append('defaultStatus', defaults.defaultStatus)
+
+    return request.post<Api.Blog.ImportArticlesResult>({
+      url: '/admin/articles/import',
+      data,
+      onUploadProgress: (event) => {
+        if (onProgress && event.total) {
+          onProgress(Math.round((event.loaded / event.total) * 100))
+        }
+      }
+    })
+  },
   listCategories() {
     return request.get<Api.Blog.Category[]>({ url: '/admin/categories' })
   },
@@ -89,7 +112,10 @@ export const blogApi = {
     return request.put<Api.Blog.Comment>({ url: `/admin/comments/${id}/reject` })
   },
   replyComment(id: number, content: string) {
-    return request.post<Api.Blog.Comment>({ url: `/admin/comments/${id}/reply`, params: { content } })
+    return request.post<Api.Blog.Comment>({
+      url: `/admin/comments/${id}/reply`,
+      params: { content }
+    })
   },
   deleteComment(id: number) {
     return request.del<void>({ url: `/admin/comments/${id}` })
@@ -102,6 +128,24 @@ export const blogApi = {
   },
   getAttachmentStats() {
     return request.get<Api.Blog.AttachmentStats>({ url: '/admin/attachments/stats' })
+  },
+  getStorageConfig() {
+    return request.get<Api.Blog.StorageConfig>({ url: '/admin/storage/config' })
+  },
+  updateStorageConfig(params: Api.Blog.StorageConfigInput) {
+    return request.put<Api.Blog.StorageConfig>({ url: '/admin/storage/config', params })
+  },
+  testStorageConfig(config?: Api.Blog.StorageConfigInput) {
+    return request.post<Api.Blog.StorageTestResult>({
+      url: '/admin/storage/test',
+      params: config ? { config } : {}
+    })
+  },
+  migrateStorage() {
+    return request.post<Api.Blog.StorageMigrationResult>({
+      url: '/admin/storage/migrate',
+      params: {}
+    })
   },
   deleteAttachment(id: number) {
     return request.del<void>({ url: `/admin/attachments/${id}` })

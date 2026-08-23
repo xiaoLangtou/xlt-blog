@@ -112,6 +112,27 @@ declare namespace Api {
       tagIds?: number[]
     }
 
+    interface ImportArticleDefaults {
+      defaultCategoryId?: number
+      defaultTagIds?: number[]
+      defaultStatus?: ArticleStatus
+    }
+
+    interface ImportArticleResult {
+      filename: string
+      status: 'success' | 'failed'
+      articleId?: number
+      title?: string
+      error?: string
+    }
+
+    interface ImportArticlesResult {
+      results: ImportArticleResult[]
+      total: number
+      success: number
+      failed: number
+    }
+
     /** 内容预览：与保存共用服务端渲染管线，保证预览与发布一致 */
     interface PreviewContentParams {
       editorType: EditorType
@@ -231,6 +252,48 @@ declare namespace Api {
     interface SiteSettings {
       themeColor: string
       menus: Array<{ label: string; url: string; sort: number }>
+    }
+
+    type StorageBackend = 'local' | 'rusfs' | 's3'
+    type StorageS3Provider = 'aws' | 'huawei-obs' | 'aliyun-oss' | 'tencent-cos' | 'custom'
+
+    interface StorageRemoteConfig {
+      endpoint?: string
+      bucket: string
+      accessKey: string
+      secretKey: string
+      region?: string
+      pathStyle?: boolean
+      publicUrlBase?: string
+    }
+
+    interface StorageConfig {
+      active: StorageBackend
+      local: {
+        publicUrlPrefix?: string
+      }
+      rusfs: StorageRemoteConfig
+      s3: StorageRemoteConfig & {
+        provider: StorageS3Provider
+      }
+    }
+
+    type StorageConfigInput = Partial<StorageConfig>
+
+    interface StorageTestResult {
+      success: boolean
+      message: string
+    }
+
+    interface StorageMigrationResult {
+      total: number
+      migrated: number
+      failed: number
+      failures: Array<{
+        id: number
+        filename: string
+        error: string
+      }>
     }
 
     interface UploadResult {

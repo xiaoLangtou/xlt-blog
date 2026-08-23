@@ -1,5 +1,8 @@
 import { EntityManager, raw } from '@mikro-orm/mysql'
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import matter from 'gray-matter'
+import { readFile, unlink } from 'node:fs/promises'
+import { extname } from 'node:path'
 import {
   ArticleStatus,
   CodeTheme,
@@ -13,8 +16,6 @@ import {
   SiteConfig,
   THEME_COLORS
 } from '@xlt-blog/shared'
-import { unlink } from 'node:fs/promises'
-import { basename, join } from 'node:path'
 import { renderContentHtml } from '../content/content-renderer'
 import {
   Article,
@@ -35,6 +36,7 @@ import {
   AdminColumnQueryDto,
   AdminCommentQueryDto,
   AdminTagQueryDto,
+  ImportArticlesDto,
   PreviewContentDto,
   SaveAdminMenuDto,
   SaveArticleDto,
@@ -43,15 +45,30 @@ import {
   SaveFriendLinkDto,
   SavePageDto,
   SaveSettingsDto,
+  SaveStorageConfigDto,
   SaveTagDto,
-  SetColumnArticlesDto
+  SetColumnArticlesDto,
+  TestStorageConfigDto
 } from './admin.dto'
+import { StorageService } from '../storage/storage.service'
 
-const UPLOAD_DIR = join(process.cwd(), process.env.UPLOAD_DIR ?? 'uploads')
+export const MAX_IMPORT_FILE_SIZE = 5 * 1024 * 1024
+const MAX_IMPORT_SLUG_ATTEMPTS = 5
+
+export type ImportArticleFile = Pick<Express.Multer.File, 'originalname' | 'size' | 'path'> & {
+  tooLarge?: boolean
+}
+
+class ImportedArticleContentError extends Error {}
+class ImportedArticleDefaultCategoryError extends Error {}
+class ImportedArticleSlugConflictError extends Error {}
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    private readonly storageService: StorageService
+  ) {}
 
   // ---------- 文章 ----------
 
@@ -99,6 +116,224 @@ export class AdminService {
     if (exists && exists.id !== excludeId) {
       throw new BadRequestException(`slug "${slug}" 已被使用`)
     }
+  }
+
+  async importArticles(files: ImportArticleFile[], defaults: ImportArticlesDto) {
+    const results: Array<
+      | { filename: string; status: 'success'; articleId: number; title: string }
+      | { filename: string; status: 'failed'; error: string }
+    > = []
+
+    for (const file of files) {
+      const filename = Buffer.from(file.originalname, 'latin1').toString('utf8')
+      try {
+        if (!this.isMarkdownImportFile(filename)) {
+          results.push({ filename, status: 'failed', error: '仅支持 Markdown 文件' })
+          continue
+        }
+        if (file.tooLarge || file.size >= MAX_IMPORT_FILE_SIZE) {
+          results.push({ filename, status: 'failed', error: '文件超过 5 MiB 限制' })
+          continue
+        }
+
+        const { data, content, title, codeTheme, renderHtml } = await this.parseImportedArticle(
+          file.path,
+          filename
+        )
+        const article = await this.persistImportedArticle(
+          data,
+          content,
+          title,
+          codeTheme,
+          renderHtml,
+          defaults
+        )
+        results.push({ filename, status: 'success', articleId: article.id, title: article.title })
+      } catch (error) {
+        results.push({ filename, status: 'failed', error: this.getImportedArticleError(error) })
+      } finally {
+        await unlink(file.path).catch(() => undefined)
+      }
+    }
+
+    const success = results.filter((result) => result.status === 'success').length
+    return { results, total: results.length, success, failed: results.length - success }
+  }
+
+  private isMarkdownImportFile(filename: string) {
+    const extension = extname(filename).toLowerCase()
+    return extension === '.md' || extension === '.markdown'
+  }
+
+  private async parseImportedArticle(path: string, filename: string) {
+    try {
+      const parsed = matter((await readFile(path)).toString('utf8'))
+      const data = parsed.data as Record<string, unknown>
+      const title = this.getImportedArticleTitle(data, parsed.content, filename)
+      const codeTheme = this.getImportedCodeTheme(data.codeTheme)
+      const renderHtml = await renderContentHtml(EditorType.MD, parsed.content, codeTheme)
+      return { data, content: parsed.content, title, codeTheme, renderHtml }
+    } catch {
+      throw new ImportedArticleContentError()
+    }
+  }
+
+  private async persistImportedArticle(
+    data: Record<string, unknown>,
+    content: string,
+    title: string,
+    codeTheme: CodeTheme,
+    renderHtml: string,
+    defaults: ImportArticlesDto
+  ) {
+    const baseSlug = this.getImportedArticleSlugBase(title, data.slug)
+
+    for (let attempt = 0; attempt < MAX_IMPORT_SLUG_ATTEMPTS; attempt++) {
+      const itemEm = this.em.fork()
+      try {
+        const article = new Article()
+        article.title = title
+        article.slug = await this.generateImportedArticleSlug(itemEm, baseSlug)
+        article.rawContent = content
+        article.editorType = EditorType.MD
+        article.codeTheme = codeTheme
+        article.renderHtml = renderHtml
+        article.rendererVersion = CURRENT_RENDERER_VERSION
+        article.summary = typeof data.summary === 'string' ? data.summary : null
+        article.cover = typeof data.cover === 'string' ? data.cover : null
+        article.category = await this.getImportedArticleCategory(
+          itemEm,
+          data.category,
+          defaults.defaultCategoryId
+        )
+        article.tags.set(await this.getImportedArticleTags(itemEm, data.tags, defaults.defaultTagIds))
+        article.status = this.getImportedArticleStatus(data.status, defaults.defaultStatus)
+        article.publishedAt =
+          this.getImportedPublishedAt(data.publishedAt) ?? this.getImportedPublishedAt(data.date)
+        if (article.status === ArticleStatus.Published && !article.publishedAt) {
+          article.publishedAt = new Date()
+        }
+
+        await itemEm.persistAndFlush(article)
+        return article
+      } catch (error) {
+        itemEm.clear()
+        if (!this.isImportedArticleSlugConflict(error)) throw error
+      }
+    }
+
+    throw new ImportedArticleSlugConflictError()
+  }
+
+  private getImportedArticleTitle(data: Record<string, unknown>, content: string, filename: string) {
+    if (typeof data.title === 'string' && data.title.trim()) return data.title.trim()
+    const heading = /^#\s+(.+)$/m.exec(content)
+    if (heading?.[1].trim()) return heading[1].trim()
+    const extension = filename.lastIndexOf('.')
+    return extension > 0 ? filename.slice(0, extension) : filename
+  }
+
+  private getImportedArticleSlugBase(title: string, frontmatterSlug: unknown) {
+    const suppliedSlug =
+      typeof frontmatterSlug === 'string' && frontmatterSlug.trim()
+        ? frontmatterSlug.trim()
+        : undefined
+    const normalizedTitle =
+      title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || `article-${Date.now().toString(36)}`
+    return suppliedSlug ?? normalizedTitle
+  }
+
+  private async generateImportedArticleSlug(em: EntityManager, base: string) {
+    let slug = base
+    let suffix = 2
+    while (await em.findOne(Article, { slug })) {
+      slug = `${base}-${suffix++}`
+    }
+    return slug
+  }
+
+  private getImportedCodeTheme(value: unknown) {
+    return value === CodeTheme.Atom || value === CodeTheme.Github ? value : CodeTheme.Github
+  }
+
+  private getImportedArticleStatus(value: unknown, defaultStatus: ArticleStatus | undefined) {
+    return value === ArticleStatus.Draft || value === ArticleStatus.Published
+      ? value
+      : (defaultStatus ?? ArticleStatus.Draft)
+  }
+
+  private async getImportedArticleCategory(
+    em: EntityManager,
+    category: unknown,
+    defaultCategoryId: number | undefined
+  ) {
+    if (typeof category === 'string' && category.trim()) {
+      return em.findOne(Category, { name: category.trim() })
+    }
+    if (defaultCategoryId === undefined) return null
+    const defaultCategory = await em.findOne(Category, { id: defaultCategoryId })
+    if (!defaultCategory) throw new ImportedArticleDefaultCategoryError()
+    return defaultCategory
+  }
+
+  private async getImportedArticleTags(
+    em: EntityManager,
+    tags: unknown,
+    defaultTagIds: number[] | undefined
+  ) {
+    if (typeof tags === 'string') {
+      return tags ? em.find(Tag, { name: { $in: [tags] } }) : []
+    }
+    if (Array.isArray(tags)) {
+      const names = tags.filter((tag): tag is string => typeof tag === 'string')
+      return names.length ? em.find(Tag, { name: { $in: names } }) : []
+    }
+    return defaultTagIds?.length ? em.find(Tag, { id: { $in: defaultTagIds } }) : []
+  }
+
+  private getImportedPublishedAt(value: unknown) {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value
+    if (typeof value !== 'string') return null
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? null : date
+  }
+
+  private isImportedArticleSlugConflict(error: unknown) {
+    const candidates: unknown[] = [error]
+    const seen = new Set<object>()
+
+    while (candidates.length) {
+      const candidate = candidates.pop()
+      if (!candidate || typeof candidate !== 'object' || seen.has(candidate)) continue
+      seen.add(candidate)
+      const details = candidate as {
+        code?: unknown
+        errno?: unknown
+        message?: unknown
+        cause?: unknown
+      }
+      if (details.code === 'ER_DUP_ENTRY' || details.errno === 1062) return true
+      if (
+        typeof details.message === 'string' &&
+        /duplicate entry/i.test(details.message) &&
+        /for key .*?(?:articles[.`'\"]*)?slug\b/i.test(details.message)
+      ) {
+        return true
+      }
+      candidates.push(details.cause)
+    }
+
+    return false
+  }
+
+  private getImportedArticleError(error: unknown) {
+    if (error instanceof ImportedArticleDefaultCategoryError) return '默认分类不存在'
+    if (error instanceof ImportedArticleContentError) return 'Markdown 文件解析或内容渲染失败'
+    if (error instanceof ImportedArticleSlugConflictError) return '文章 slug 冲突，请重试导入'
+    return '文章保存失败'
   }
 
   private async applyArticleDto(article: Article, dto: SaveArticleDto) {
@@ -582,18 +817,56 @@ export class AdminService {
     return list.map((p) => ({ mimeType: { $like: `${p}%` } }))
   }
 
-  async createAttachment(data: { filename: string; url: string; mimeType: string; size: number }) {
-    const attachment = this.em.create(Attachment, { ...data, createdAt: new Date() })
-    await this.em.persistAndFlush(attachment)
-    return attachment
+  async uploadAttachment(data: { filename: string; buffer: Buffer; mimeType: string; size: number }) {
+    const uploaded = await this.storageService.put({
+      name: data.filename,
+      buffer: data.buffer,
+      mimeType: data.mimeType
+    })
+
+    try {
+      const attachment = this.em.create(Attachment, {
+        filename: data.filename,
+        url: uploaded.url,
+        mimeType: data.mimeType,
+        size: data.size,
+        storage: uploaded.storage,
+        storageKey: uploaded.key,
+        createdAt: new Date()
+      })
+      await this.em.persistAndFlush(attachment)
+      return { url: uploaded.url }
+    } catch (error) {
+      await this.storageService.delete(uploaded.storage, uploaded.key).catch(() => undefined)
+      throw error
+    }
   }
 
   async deleteAttachment(id: number) {
     const attachment = await this.em.findOneOrFail(Attachment, { id })
+    if (attachment.storageKey) {
+      await this.storageService.delete(attachment.storage, attachment.storageKey)
+    }
     await this.em.removeAndFlush(attachment)
-    // 同步删除磁盘文件，文件不存在时忽略
-    await unlink(join(UPLOAD_DIR, basename(attachment.url))).catch(() => {})
     return null
+  }
+
+  // ---------- 存储 ----------
+
+  getStorageConfig() {
+    return this.storageService.getMaskedConfig()
+  }
+
+  saveStorageConfig(dto: SaveStorageConfigDto) {
+    return this.storageService.saveConfig(dto)
+  }
+
+  testStorageConfig(dto: TestStorageConfigDto) {
+    return this.storageService.testConfig(dto.config)
+  }
+
+  migrateStorageAttachments() {
+    return this.storageService.migrateAttachments()
   }
 
   // ---------- 独立页面 ----------

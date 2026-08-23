@@ -21,8 +21,9 @@
 </script>
 
 <template>
-  <UModal v-model="isOpen" :ui="{ width: 'max-w-4xl' }">
-    <div class="p-6">
+  <UModal v-model:open="isOpen" :ui="{ content: 'max-w-4xl' }">
+    <template #content>
+      <div class="p-6">
       <template v-if="status === 'pending' && !article">
         <div class="space-y-4">
           <USkeleton class="h-8 w-3/4" />
@@ -96,6 +97,7 @@
       <div v-else class="text-center py-10">
         <p class="text-muted">文章加载失败</p>
       </div>
-    </div>
+      </div>
+    </template>
   </UModal>
 </template>

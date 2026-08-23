@@ -29,6 +29,7 @@
   const detailItem = ref<Api.Blog.Attachment | null>(null)
   const uploadRef = useTemplateRef<UploadInstance>('uploadRef')
   const previewMode = ref<'info' | 'preview'>('info')
+  const router = useRouter()
 
   const stats = ref<Api.Blog.AttachmentStats>({
     total: 0,
@@ -391,6 +392,9 @@
         <template #left>
           <ElButton type="primary" @click="uploadDialogVisible = true">
             <ArtSvgIcon icon="ri:upload-2-line" />上传文件
+          </ElButton>
+          <ElButton @click="router.push('/blog-system/storage')">
+            <ArtSvgIcon icon="ri:hard-drive-3-line" />存储配置
           </ElButton>
         </template>
         <template #right>

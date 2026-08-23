@@ -10,21 +10,26 @@ import {
   Put,
   Query,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { ArticleStatus, CommentStatus } from "@xlt-blog/shared";
 import { XltCheckLogin } from "@xlt-token/nestjs";
 import { randomUUID } from "node:crypto";
-import { existsSync, mkdirSync } from "node:fs";
-import { diskStorage } from "multer";
-import { extname, join } from "node:path";
+import { mkdir, open, unlink } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { Writable } from "node:stream";
+import { memoryStorage, type StorageEngine } from "multer";
 import {
   AdminArticleQueryDto,
   AdminAttachmentQueryDto,
   AdminColumnQueryDto,
   AdminCommentQueryDto,
   AdminTagQueryDto,
+  ImportArticlesDto,
+  MigrateStorageDto,
   PreviewContentDto,
   ReplyCommentDto,
   SaveAdminMenuDto,
@@ -34,14 +39,104 @@ import {
   SaveFriendLinkDto,
   SavePageDto,
   SaveSettingsDto,
+  SaveStorageConfigDto,
   SaveTagDto,
   SetColumnArticlesDto,
+  TestStorageConfigDto,
 } from "./admin.dto";
 import { CompleteAiDto } from "./ai.dto";
-import { AdminService } from "./admin.service";
+import { AdminService, MAX_IMPORT_FILE_SIZE, type ImportArticleFile } from "./admin.service";
 import { AiService } from "./ai.service";
 
-const UPLOAD_DIR = join(process.cwd(), process.env.UPLOAD_DIR ?? "uploads");
+const IMPORT_TEMP_DIRECTORY = join(tmpdir(), "xlt-blog-markdown-import");
+
+async function removeTemporaryImportFile(path: string) {
+  try {
+    await unlink(path);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+}
+
+const importArticleStorage: StorageEngine = {
+  _handleFile(_req, file, callback) {
+    void (async () => {
+      const path = join(IMPORT_TEMP_DIRECTORY, randomUUID());
+      let fileHandle: Awaited<ReturnType<typeof open>> | undefined;
+      let output: Writable | undefined;
+      let size = 0;
+      let tooLarge = false;
+      let completed = false;
+
+      const complete = async (initialError?: Error) => {
+        if (completed) return;
+        completed = true;
+
+        if (initialError) {
+          file.stream.unpipe(output);
+          output?.destroy();
+          file.stream.resume();
+        }
+
+        let error = initialError;
+        try {
+          await fileHandle?.close();
+        } catch (closeError) {
+          error ??= closeError instanceof Error ? closeError : new Error("Failed to close import file");
+        }
+
+        if (error || tooLarge) {
+          try {
+            await removeTemporaryImportFile(path);
+          } catch (cleanupError) {
+            error ??= cleanupError instanceof Error ? cleanupError : new Error("Failed to clean up import file");
+          }
+        }
+
+        if (error) {
+          callback(error);
+          return;
+        }
+
+        callback(null, { path, size, tooLarge } as Partial<Express.Multer.File>);
+      };
+
+      try {
+        await mkdir(IMPORT_TEMP_DIRECTORY, { recursive: true, mode: 0o700 });
+        fileHandle = await open(path, "wx", 0o600);
+        output = new Writable({
+          write(chunk, _encoding, done) {
+            const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+            size += buffer.length;
+            if (tooLarge || size >= MAX_IMPORT_FILE_SIZE) {
+              tooLarge = true;
+              done();
+              return;
+            }
+            void fileHandle!.writeFile(buffer).then(() => done(), done);
+          },
+        });
+        output.once("error", (error) => void complete(error));
+        output.once("finish", () => void complete());
+        file.stream.once("error", (error) => output?.destroy(error));
+        file.stream.pipe(output);
+      } catch (error) {
+        file.stream.resume();
+        await complete(error instanceof Error ? error : new Error("Failed to store import file"));
+      }
+    })();
+  },
+  _removeFile(_req, file, callback) {
+    if (!file.path) {
+      callback(null);
+      return;
+    }
+    void removeTemporaryImportFile(file.path).then(
+      () => callback(null),
+      (error) => callback(error instanceof Error ? error : new Error("Failed to clean up import file")),
+    );
+  },
+};
 
 /** 管理接口，全部要求登录 */
 @XltCheckLogin()
@@ -74,6 +169,20 @@ export class AdminController {
   @Post("articles")
   createArticle(@Body() dto: SaveArticleDto) {
     return this.adminService.createArticle(dto);
+  }
+
+  @Post("articles/import")
+  @UseInterceptors(
+    FilesInterceptor("files", 50, {
+      storage: importArticleStorage,
+      fileFilter: (_req, _file, callback) => callback(null, true),
+    }),
+  )
+  importArticles(
+    @UploadedFiles() files: ImportArticleFile[] | undefined,
+    @Body() defaults: ImportArticlesDto,
+  ) {
+    return this.adminService.importArticles(files ?? [], defaults);
   }
 
   /** 内容实时预览：三编辑器共用，与保存同一渲染管线 */
@@ -233,6 +342,28 @@ export class AdminController {
     return this.adminService.saveSettings(dto);
   }
 
+  // ---------- 存储 ----------
+
+  @Get("storage/config")
+  getStorageConfig() {
+    return this.adminService.getStorageConfig();
+  }
+
+  @Put("storage/config")
+  saveStorageConfig(@Body() dto: SaveStorageConfigDto) {
+    return this.adminService.saveStorageConfig(dto);
+  }
+
+  @Post("storage/test")
+  testStorage(@Body() dto: TestStorageConfigDto) {
+    return this.adminService.testStorageConfig(dto);
+  }
+
+  @Post("storage/migrate")
+  migrateStorage(@Body() _dto: MigrateStorageDto) {
+    return this.adminService.migrateStorageAttachments();
+  }
+
   // ---------- 附件 ----------
 
   @Get("attachments")
@@ -311,28 +442,18 @@ export class AdminController {
   @Post("upload")
   @UseInterceptors(
     FileInterceptor("file", {
-      storage: diskStorage({
-        destination: (_req, _file, cb) => {
-          if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
-          cb(null, UPLOAD_DIR);
-        },
-        filename: (_req, file, cb) => cb(null, `${randomUUID()}${extname(file.originalname)}`),
-      }),
+      storage: memoryStorage(),
       limits: { fileSize: 200 * 1024 * 1024 },
-      fileFilter: (_req, _file, cb) => cb(null, true),
     }),
   )
   async upload(@UploadedFile() file?: Express.Multer.File) {
     if (!file) throw new BadRequestException("未接收到文件");
-    const url = `/uploads/${file.filename}`;
-    // 落一条附件记录，供附件库管理
-    await this.adminService.createAttachment({
+    return this.adminService.uploadAttachment({
       filename: Buffer.from(file.originalname, "latin1").toString("utf8"),
-      url,
+      buffer: file.buffer,
       mimeType: file.mimetype,
       size: file.size,
     });
-    return { url };
   }
 
   // ---------- 后台菜单 ----------

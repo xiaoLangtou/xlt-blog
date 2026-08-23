@@ -2,6 +2,7 @@ import { ArticleStatus, CodeTheme, CommentStatus, EditorType } from '@xlt-blog/s
 import { Type } from 'class-transformer'
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsIn,
   IsInt,
@@ -51,6 +52,23 @@ export class AdminTagQueryDto {
   @IsOptional()
   @IsString()
   keyword?: string
+}
+
+export class ImportArticlesDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  defaultCategoryId?: number
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Type(() => Number)
+  defaultTagIds?: number[]
+
+  @IsOptional()
+  @IsEnum(ArticleStatus)
+  defaultStatus?: ArticleStatus
 }
 
 export class SaveArticleDto {
@@ -425,3 +443,84 @@ export class SaveAdminMenuDto {
   @IsString()
   remark?: string
 }
+
+
+class LocalStorageConfigDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  publicUrlPrefix?: string
+}
+
+class S3CompatibleStorageConfigDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  endpoint?: string
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  bucket?: string
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1024)
+  accessKey?: string
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1024)
+  secretKey?: string
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  region?: string
+
+  @IsOptional()
+  @IsBoolean()
+  pathStyle?: boolean
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  publicUrlBase?: string
+}
+
+class S3StorageConfigDto extends S3CompatibleStorageConfigDto {
+  @IsOptional()
+  @IsIn(['aws', 'huawei-obs', 'aliyun-oss', 'tencent-cos', 'custom'])
+  provider?: 'aws' | 'huawei-obs' | 'aliyun-oss' | 'tencent-cos' | 'custom'
+}
+
+export class SaveStorageConfigDto {
+  @IsOptional()
+  @IsIn(['local', 'rusfs', 's3'])
+  active?: 'local' | 'rusfs' | 's3'
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LocalStorageConfigDto)
+  local?: LocalStorageConfigDto
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => S3CompatibleStorageConfigDto)
+  rusfs?: S3CompatibleStorageConfigDto
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => S3StorageConfigDto)
+  s3?: S3StorageConfigDto
+}
+
+export class TestStorageConfigDto {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SaveStorageConfigDto)
+  config?: SaveStorageConfigDto
+}
+
+/** Intentionally empty: attachment URLs and storage keys are server-side data. */
+export class MigrateStorageDto {}
