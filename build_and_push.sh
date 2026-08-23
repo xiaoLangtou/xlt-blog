@@ -34,9 +34,10 @@ dockerfile_for() {
   esac
 }
 
-# 只有 admin/web 需要本地编译；server 交给容器内 build，这里查不到就跳过本地编译
+# 只有 admin/web 需要本地编译；server 也先本地编译生成 dist
 build_script_for() {
   case "$1" in
+    server) echo "build:server" ;;
     web)    echo "build:web" ;;
     admin)  echo "build:admin" ;;
     *)      return 1 ;;

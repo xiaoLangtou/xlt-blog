@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>媒体库配置 - Xlt Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css" />
+<style>
+  :root{
+    --primary:#0F6E56;
+    --primary-hover:#0C5A46;
+    --primary-light:#E1F5EE;
+    --danger:#D85A30;
+    --bg-page:#F5F6F8;
+    --bg-white:#FFFFFF;
+    --border:#E7E9EC;
+    --text-1:#1F2329;
+    --text-2:#646A73;
+    --text-3:#8F959E;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg-page);color:var(--text-1);font-size:14px;}
+  a{color:inherit;text-decoration:none;}
+
+  /* ---------- layout shell ---------- */
+  .app{display:flex;min-height:100vh;}
+  .sidebar{width:220px;flex-shrink:0;background:var(--bg-white);border-right:1px solid var(--border);padding:16px 12px;}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 20px;font-weight:600;font-size:16px;}
+  .brand .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6C63F2,#00C2A8);flex-shrink:0;}
+  .nav-group-label{font-size:12px;color:var(--text-3);padding:10px 10px 4px;}
+  .nav-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--radius);color:var(--text-2);font-size:13.5px;cursor:pointer;}
+  .nav-item i{font-size:16px;}
+  .nav-item:hover{background:#F5F6F8;}
+  .nav-item.active{background:var(--primary-light);color:var(--primary);font-weight:500;border-left:2px solid var(--primary);padding-left:8px;}
+  .nav-item.sub{padding-left:30px;}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{height:56px;background:var(--bg-white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;}
+  .crumb{font-size:13px;color:var(--text-2);display:flex;align-items:center;gap:6px;}
+  .crumb b{color:var(--text-1);font-weight:500;}
+  .topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px;color:var(--text-2);}
+  .avatar{width:28px;height:28px;border-radius:50%;background:#DDD;}
+
+  .tabstrip{display:flex;gap:8px;background:var(--bg-white);border-bottom:1px solid var(--border);padding:8px 20px;overflow-x:auto;}
+  .tabstrip .tab{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-2);background:#F5F6F8;border-radius:5px;padding:5px 10px;white-space:nowrap;}
+  .tabstrip .tab.active{background:var(--primary-light);color:var(--primary);}
+  .tabstrip .tab i.close{font-size:12px;opacity:.6;}
+
+  .content{padding:20px;max-width:1180px;width:100%;margin:0 auto;}
+
+  /* ---------- page header ---------- */
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .page-title{font-size:18px;font-weight:600;margin:0;}
+  .page-sub{font-size:12.5px;color:var(--text-2);margin:4px 0 0;}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .seg button{border:none;background:var(--bg-white);color:var(--text-2);font-size:13px;padding:7px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .seg button.active{background:var(--primary);color:#fff;}
+  .seg button+button{border-left:1px solid var(--border);}
+
+  /* ---------- shared ---------- */
+  .panel{background:var(--bg-white);border:1px solid var(--border);border-radius:10px;}
+  .btn{border:1px solid var(--border);background:var(--bg-white);color:var(--text-1);font-size:13px;padding:8px 16px;border-radius:var(--radius);cursor:pointer;}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .btn.primary:hover{background:var(--primary-hover);}
+  .field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text-2);}
+  .field input,.field select{height:34px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;color:var(--text-1);background:#FBFBFC;}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--primary);}
+  .badge{font-size:11.5px;padding:2px 8px;border-radius:4px;}
+  .badge.off{background:#F5F6F8;color:var(--text-3);}
+  .badge.on{background:var(--primary-light);color:var(--primary);}
+
+  /* ---------- card view ---------- */
+  #view-card .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+  .store-card{position:relative;padding:18px 18px 20px;cursor:pointer;transition:border-color .15s;}
+  .store-card .icon-wrap{width:38px;height:38px;border-radius:8px;background:#F5F6F8;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:19px;color:var(--text-2);}
+  .store-card h4{margin:0 0 6px;font-size:14.5px;font-weight:500;}
+  .store-card p{margin:0;font-size:12.5px;color:var(--text-2);line-height:1.6;}
+  .store-card .radio{position:absolute;top:16px;right:16px;width:16px;height:16px;border-radius:50%;border:1.5px solid #D8DBE0;}
+  .store-card.selected{border:1.5px solid var(--primary);}
+  .store-card.selected .icon-wrap{background:var(--primary-light);color:var(--primary);}
+  .store-card.selected .radio{border-color:var(--primary);background:var(--primary);box-shadow:inset 0 0 0 3px #fff;}
+
+  /* ---------- list view ---------- */
+  #view-list{display:none;flex-direction:column;}
+  .list-row{border-bottom:1px solid var(--border);}
+  .list-row:last-child{border-bottom:none;}
+  .row-head{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;}
+  .row-head:hover{background:#FBFBFC;}
+  .row-head .icon-wrap{width:36px;height:36px;border-radius:8px;background:#F5F6F8;display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--text-2);flex-shrink:0;}
+  .row-head .info{flex:1;min-width:0;}
+  .row-head .info .t{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;}
+  .row-head .info p{margin:3px 0 0;font-size:12.5px;color:var(--text-2);}
+  .row-head .chevron{font-size:15px;color:var(--text-3);transition:transform .15s;flex-shrink:0;}
+  .list-row.expanded .row-head .chevron{transform:rotate(180deg);}
+  .list-row.active .row-head .icon-wrap{background:var(--primary-light);color:var(--primary);}
+  .row-body{display:none;padding:0 20px 24px 70px;}
+  .list-row.expanded .row-body{display:block;}
+
+  .form-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-top:14px;border-top:1px solid var(--border);}
+  .form-head i{font-size:16px;color:var(--primary);}
+  .form-head .t{font-size:13.5px;font-weight:500;color:var(--text-2);}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px;}
+  .form-actions{margin-top:20px;display:flex;gap:10px;}
+
+  .card-panel-body{padding:20px 24px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- sidebar -->
+  <aside class="sidebar">
+    <div class="brand"><span class="logo"></span>Xlt Admin</div>
+    <div class="nav-item"><i class="ti ti-layout-dashboard"></i>仪表盘</div>
+    <div class="nav-item"><i class="ti ti-shield-check"></i>权限管理</div>
+    <div class="nav-item"><i class="ti ti-activity"></i>系统监控</div>
+    <div class="nav-item"><i class="ti ti-apps"></i>开发平台</div>
+    <div class="nav-item active"><i class="ti ti-notebook"></i>博客管理</div>
+    <div class="nav-item sub"><i class="ti ti-file-text"></i>文章管理</div>
+    <div class="nav-item sub"><i class="ti ti-folder"></i>分类管理</div>
+    <div class="nav-item sub"><i class="ti ti-tag"></i>标签管理</div>
+    <div class="nav-item sub"><i class="ti ti-layout-columns"></i>专栏管理</div>
+    <div class="nav-item sub"><i class="ti ti-message-circle"></i>评论管理</div>
+    <div class="nav-item sub active" style="font-weight:500;"><i class="ti ti-photo"></i>媒体库</div>
+    <div class="nav-item"><i class="ti ti-settings"></i>博客系统</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb"><i class="ti ti-menu-2"></i></div>
+      <div class="topbar-right" style="margin-left:0;">
+        <i class="ti ti-search"></i>
+      </div>
+      <div class="topbar-right">
+        <i class="ti ti-language"></i>
+        <i class="ti ti-bell"></i>
+        <i class="ti ti-moon"></i>
+        <span class="avatar"></span>
+      </div>
+    </div>
+
+    <div class="tabstrip">
+      <div class="tab"><i class="ti ti-file-text"></i>文章管理</div>
+      <div class="tab active"><i class="ti ti-photo"></i>媒体库配置<i class="ti ti-x close"></i></div>
+    </div>
+
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <p class="page-title">媒体库配置</p>
+          <p class="page-sub">选择图片、视频等媒体文件的存储方式，可随时切换与测试连接</p>
+        </div>
+        <div class="seg">
+          <button id="btn-card" class="active" onclick="setView('card')"><i class="ti ti-layout-grid"></i>卡片式</button>
+          <button id="btn-list" onclick="setView('list')"><i class="ti ti-list"></i>列表式</button>
+        </div>
+      </div>
+
+      <!-- ============ 卡片式展示 ============ -->
+      <div id="view-card">
+        <div class="cards">
+          <div class="store-card panel" data-type="local" onclick="pick('local')">
+            <span class="radio"></span>
+            <div class="icon-wrap"><i class="ti ti-folder"></i></div>
+            <h4>本地存储</h4>
+            <p>文件保存在服务器本地磁盘，部署简单，无需额外依赖</p>
+          </div>
+          <div class="store-card panel" data-type="rusfs" onclick="pick('rusfs')">
+            <span class="radio"></span>
+            <div class="icon-wrap"><i class="ti ti-server-2"></i></div>
+            <h4>本地 rusfs 存储</h4>
+            <p>通过自建 rusfs 服务统一管理文件，支持独立部署与扩容</p>
+          </div>
+          <div class="store-card panel" data-type="cloud" onclick="pick('cloud')">
+            <span class="radio"></span>
+            <div class="icon-wrap"><i class="ti ti-cloud"></i></div>
+            <h4>云服务商对象存储</h4>
+            <p>对接阿里云 OSS、腾讯云 COS、华为云 OBS、AWS S3 等</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="card-panel-body" id="panel-card"></div>
+        </div>
+      </div>
+
+      <!-- ============ 列表式展示 ============ -->
+      <div id="view-list" class="panel">
+        <div class="list-row" data-type="local">
+          <div class="row-head" onclick="toggleRow('local')">
+            <div class="icon-wrap"><i class="ti ti-folder"></i></div>
+            <div class="info">
+              <div class="t">本地存储<span class="badge off" data-badge="local">未启用</span></div>
+              <p>文件保存在服务器本地磁盘，部署简单，无需额外依赖</p>
+            </div>
+            <i class="ti ti-chevron-down chevron"></i>
+          </div>
+          <div class="row-body" id="row-body-local"></div>
+        </div>
+        <div class="list-row" data-type="rusfs">
+          <div class="row-head" onclick="toggleRow('rusfs')">
+            <div class="icon-wrap"><i class="ti ti-server-2"></i></div>
+            <div class="info">
+              <div class="t">本地 rusfs 存储<span class="badge off" data-badge="rusfs">未启用</span></div>
+              <p>通过自建 rusfs 服务统一管理文件，支持独立部署与扩容</p>
+            </div>
+            <i class="ti ti-chevron-down chevron"></i>
+          </div>
+          <div class="row-body" id="row-body-rusfs"></div>
+        </div>
+        <div class="list-row" data-type="cloud">
+          <div class="row-head" onclick="toggleRow('cloud')">
+            <div class="icon-wrap"><i class="ti ti-cloud"></i></div>
+            <div class="info">
+              <div class="t">云服务商对象存储<span class="badge off" data-badge="cloud">未启用</span></div>
+              <p>对接阿里云 OSS、腾讯云 COS、华为云 OBS、AWS S3 等</p>
+            </div>
+            <i class="ti ti-chevron-down chevron"></i>
+          </div>
+          <div class="row-body" id="row-body-cloud"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+var forms = {
+  local: {
+    icon: 'ti-folder', title: '本地存储配置',
+    fields: [
+      ['存储路径', '/data/blog/uploads'],
+      ['访问 URL 前缀', 'https://blog.example.com/uploads'],
+      ['单文件大小上限 (MB)', '20'],
+      ['允许的文件类型', 'jpg,png,webp,mp4']
+    ]
+  },
+  rusfs: {
+    icon: 'ti-server-2', title: '本地 rusfs 存储配置',
+    fields: [
+      ['rusfs 服务地址', 'http://127.0.0.1:9010'],
+      ['Bucket 名称', 'blog-media'],
+      ['访问 Token', '••••••••••••'],
+      ['访问 URL 前缀', 'https://blog.example.com/rusfs']
+    ]
+  },
+  cloud: {
+    icon: 'ti-cloud', title: '云服务商对象存储配置',
+    select: ['服务商', ['华为云 OBS', '阿里云 OSS', '腾讯云 COS', 'AWS S3']],
+    fields: [
+      ['Access Key', 'AKID••••••••'],
+      ['Secret Key', '••••••••••••'],
+      ['Bucket 名称', 'xlt-blog-media'],
+      ['地域 (Region)', 'cn-north-4'],
+      ['自定义域名 / CDN', 'https://cdn.example.com']
+    ]
+  }
+};
+
+function fieldGrid(f){
+  var html = '<div class="form-grid">';
+  if(f.select){
+    html += '<label class="field">' + f.select[0] + '<select>' +
+      f.select[1].map(function(o){return '<option>'+o+'</option>';}).join('') + '</select></label>';
+  }
+  f.fields.forEach(function(pair){
+    html += '<label class="field">' + pair[0] + '<input type="text" value="' + pair[1] + '" /></label>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderCardForm(type){
+  var f = forms[type];
+  var html = '<div class="form-head" style="border-top:none;padding-top:0;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);">' +
+    '<i class="ti ' + f.icon + '"></i><span class="t" style="font-size:14.5px;color:var(--text-1);">' + f.title + '</span>' +
+    '<span class="badge ' + (activeType === type ? 'on' : 'off') + '" style="margin-left:auto;">' + (activeType === type ? '当前使用' : '未启用') + '</span></div>';
+  html += fieldGrid(f);
+  html += '<div class="form-actions"><button class="btn primary">保存配置</button><button class="btn">测试连接</button></div>';
+  return html;
+}
+
+function renderRowForm(type){
+  var f = forms[type];
+  var html = fieldGrid(f);
+  html += '<div class="form-actions">' +
+    '<button class="btn primary">保存配置</button>' +
+    '<button class="btn">测试连接</button>' +
+    (activeType === type ? '' : '<button class="btn" onclick="setActive(\'' + type + '\')" style="margin-left:auto;">设为当前存储</button>') +
+    '</div>';
+  return html;
+}
+
+var activeType = 'cloud';
+var openRow = 'cloud';
+
+function pick(type){
+  document.querySelectorAll('.store-card').forEach(function(el){
+    el.classList.toggle('selected', el.getAttribute('data-type') === type);
+  });
+  document.getElementById('panel-card').innerHTML = renderCardForm(type);
+}
+
+function toggleRow(type){
+  openRow = (openRow === type) ? null : type;
+  document.querySelectorAll('.list-row').forEach(function(el){
+    var expanded = el.getAttribute('data-type') === openRow;
+    el.classList.toggle('expanded', expanded);
+    if(expanded){
+      document.getElementById('row-body-' + type).innerHTML = renderRowForm(type);
+    }
+  });
+}
+
+function setActive(type){
+  activeType = type;
+  document.querySelectorAll('.list-row').forEach(function(el){
+    var t = el.getAttribute('data-type');
+    el.classList.toggle('active', t === type);
+    var badge = document.querySelector('[data-badge="' + t + '"]');
+    badge.className = 'badge ' + (t === type ? 'on' : 'off');
+    badge.textContent = t === type ? '当前使用' : '未启用';
+    if(el.classList.contains('expanded')){
+      document.getElementById('row-body-' + t).innerHTML = renderRowForm(t);
+    }
+  });
+  if(document.getElementById('panel-card').innerHTML){
+    var cardType = document.querySelector('.store-card.selected').getAttribute('data-type');
+    document.getElementById('panel-card').innerHTML = renderCardForm(cardType);
+  }
+}
+
+function setView(v){
+  document.getElementById('view-card').style.display = v === 'card' ? 'block' : 'none';
+  document.getElementById('view-list').style.display = v === 'list' ? 'block' : 'none';
+  document.getElementById('btn-card').classList.toggle('active', v === 'card');
+  document.getElementById('btn-list').classList.toggle('active', v === 'list');
+}
+
+pick('cloud');
+setActive('cloud');
+toggleRow('cloud');
+setView('card');
+</script>
+</body>
+</html>

@@ -300,6 +300,7 @@
     "rememberPwd": "Remember password",
     "forgetPwd": "Forgot password",
     "btnText": "Login",
+    "error": "Invalid account or password, please try again",
     "noAccount": "No account yet?",
     "register": "Register",
     "success": {

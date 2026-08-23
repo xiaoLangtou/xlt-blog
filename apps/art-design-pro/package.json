@@ -96,6 +96,7 @@
     "echarts": "^6.0.0",
     "element-plus": "^2.11.2",
     "file-saver": "^2.0.5",
+    "gsap": "catalog:",
     "highlight.js": "^11.10.0",
     "jit-viewer": "catalog:",
     "lowlight": "^3.3.0",

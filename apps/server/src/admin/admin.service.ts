@@ -750,33 +750,35 @@ export class AdminService {
           ? menuParentId === -1 || menuParentId === 0
           : menuParentId === parentId
       })
-      .map((menu) => ({
-        id: Number(menu.id),
-        parentId: Number(menu.parentMenuId ?? -1),
-        name: menu.name ?? '',
-        enName: menu.enName ?? '',
-        permission: menu.permission ?? '',
-        path: menu.path ?? '',
-        icon: menu.icon ?? '',
-        visible: menu.visible,
-        sortOrder: menu.sortOrder ?? 0,
-        keepAlive: menu.keepAlive,
-        menuType: menu.menuType,
-        isIframe: menu.isIframe,
-        iframeUrl: menu.iframeUrl ?? '',
-        component: menu.component ?? '',
-        remark: menu.remark ?? '',
-        meta: {
-          title: menu.name ?? '',
+      .map((menu) => {
+        const id = Number(menu.id)
+        return {
+          id,
+          parentId: Number(menu.parentMenuId ?? -1),
+          name: menu.name ?? '',
+          enName: menu.enName ?? '',
+          permission: menu.permission ?? '',
+          path: menu.path ?? '',
           icon: menu.icon ?? '',
-          // The supplied sys_menu data uses 0 for navigation-visible rows and 1 for hidden rows.
-          isHide: menu.visible === '1',
-          isKeepAlive: menu.keepAlive === '1',
-          isIframe: menu.isIframe === '1',
-          iframeUrl: menu.iframeUrl ?? undefined
-        },
-        children: this.buildMenuTree(menus, menu.id)
-      }))
+          visible: menu.visible,
+          sortOrder: menu.sortOrder ?? 0,
+          keepAlive: menu.keepAlive,
+          menuType: menu.menuType,
+          isIframe: menu.isIframe,
+          iframeUrl: menu.iframeUrl ?? '',
+          component: menu.component ?? '',
+          remark: menu.remark ?? '',
+          meta: {
+            title: menu.name ?? '',
+            icon: menu.icon ?? '',
+            isHide: menu.visible === '1',
+            isKeepAlive: menu.keepAlive === '1',
+            isIframe: menu.isIframe === '1',
+            iframeUrl: menu.iframeUrl ?? undefined
+          },
+          children: this.buildMenuTree(menus, id)
+        }
+      })
   }
 
   async getAdminMenu(id: number) {

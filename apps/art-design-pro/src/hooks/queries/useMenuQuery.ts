@@ -7,9 +7,8 @@
  */
 import { useQuery } from '@tanstack/vue-query'
 import type { MaybeRef } from 'vue'
-import { computed, unref, watch } from 'vue'
+import { computed, unref } from 'vue'
 import { useAppMode } from '@/hooks/core/useAppMode'
-import { useMenuStore } from '@/store/modules/menu'
 import { useUserStore } from '@/store/modules/user'
 import { createMenuQueryKey, fetchAppMenuList } from '@/utils/menu'
 
@@ -21,7 +20,6 @@ export interface UseMenuQueryOptions {
 /** 获取应用侧边栏菜单 */
 export function useMenuQuery(options?: UseMenuQueryOptions) {
   const userStore = useUserStore()
-  const menuStore = useMenuStore()
   const { currentMode } = useAppMode()
 
   const queryKey = computed(() =>
@@ -35,19 +33,12 @@ export function useMenuQuery(options?: UseMenuQueryOptions) {
     queryKey,
     queryFn: fetchAppMenuList,
     enabled: () => userStore.isLogin && (unref(options?.enabled) ?? true),
-    staleTime: 0,
+    // 动态路由守卫先通过 queryClient.fetchQuery() 拉取并注册该菜单；布局仅订阅同一缓存，
+    // 不在挂载时发起第二次请求，也不回写 menuStore。
+    staleTime: Infinity,
+    refetchOnMount: false,
     gcTime: 5 * 60 * 1000
   })
-
-  watch(
-    () => query.data.value,
-    (menuList) => {
-      if (menuList?.length) {
-        menuStore.setMenuList(menuList)
-      }
-    },
-    { immediate: true }
-  )
 
   return query
 }
