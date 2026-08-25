@@ -12,14 +12,22 @@ const route = useRoute()
 
 const siteConfig = useBlogConfig()
 
-// 导航菜单来自后台配置，外链新窗口打开
-const links = computed(() =>
-  siteConfig.value.menus.map(menu => ({
-    label: menu.label,
-    to: menu.url,
-    external: /^https?:\/\//.test(menu.url)
-  }))
-)
+const columnMenu = { label: '专栏', url: '/columns', sort: 2 }
+
+// 导航菜单来自后台配置；为兼容已保存的旧配置，缺少专栏时在前台补入入口。
+const links = computed(() => {
+  const menus = siteConfig.value.menus.some(menu => menu.url === columnMenu.url)
+    ? siteConfig.value.menus
+    : [...siteConfig.value.menus, columnMenu]
+
+  return [...menus]
+    .sort((a, b) => a.sort - b.sort)
+    .map(menu => ({
+      label: menu.label,
+      to: menu.url,
+      external: /^https?:\/\//.test(menu.url)
+    }))
+})
 
 function isActive(to: string) {
   if (/^https?:\/\//.test(to)) return false

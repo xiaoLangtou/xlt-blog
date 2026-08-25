@@ -673,3 +673,10 @@ body {
   .article-content .shiki,
   .article-content pre { padding: .9375rem 1rem; font-size: .75rem; }
 }
+
+
+/* 文章目录跳转时为固定导航栏预留空间，避免标题被遮挡。 */
+.article-content h2,
+.article-content h3 {
+  scroll-margin-top: 5.5rem;
+}

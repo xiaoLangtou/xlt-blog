@@ -82,6 +82,34 @@ export interface TagDto {
   articleCount?: number
 }
 
+/** 公开专栏摘要 */
+export interface ColumnDto {
+  id: number
+  name: string
+  slug: string
+  description: string | null
+  cover: string | null
+  status: ArticleStatus
+  sort: number
+  createdAt: string
+  updatedAt: string
+}
+
+/** 专栏中按编排顺序展示的文章 */
+export interface ColumnArticleDto {
+  id: number
+  title: string
+  slug: string
+  summary: string | null
+  cover: string | null
+  views: number
+  publishedAt: string | null
+}
+
+export interface ColumnDetailDto extends ColumnDto {
+  articles: ColumnArticleDto[]
+}
+
 export interface ArticleListItemDto {
   id: number
   title: string
@@ -256,14 +284,194 @@ export interface MenuItemConfig {
 export const DEFAULT_MENUS: MenuItemConfig[] = [
   { label: '文章', url: '/', sort: 0 },
   { label: '归档', url: '/archive', sort: 1 },
-  { label: '友链', url: '/friends', sort: 2 },
-  { label: '关于', url: '/about', sort: 3 }
+  { label: '专栏', url: '/columns', sort: 2 },
+  { label: '友链', url: '/friends', sort: 3 },
+  { label: '关于', url: '/about', sort: 4 }
 ]
 
 /** 站点公开配置 */
 export interface SiteConfig {
   themeColor: string
   menus: MenuItemConfig[]
+}
+
+// ---------- 个人简历 ----------
+
+export interface ResumeProfileDto {
+  name: string
+  headline: string
+  summary: string
+  experience: string
+  education: string
+  availability: string
+  location: string
+}
+
+export interface ResumeDesiredPositionDto {
+  position: string
+  industry: string
+  salary: string
+}
+
+export interface ResumeExperienceDto {
+  id: string
+  company: string
+  title: string
+  department: string
+  start: string
+  end: string
+  current: boolean
+  skills: string[]
+  highlights: string[]
+  responsibilities: string[]
+}
+
+export interface ResumeProjectDto {
+  id: string
+  name: string
+  role: string
+  start: string
+  end: string
+  description: string
+  stack: string[]
+  highlights: string[]
+}
+
+export interface ResumeEducationDto {
+  id: string
+  school: string
+  degree: string
+  major: string
+  start: string
+  end: string
+  description: string
+}
+
+/** 公开与后台共用的单份个人简历 */
+export interface ResumeDto {
+  profile: ResumeProfileDto
+  desiredPosition: ResumeDesiredPositionDto
+  skills: string[]
+  experiences: ResumeExperienceDto[]
+  projects: ResumeProjectDto[]
+  education: ResumeEducationDto[]
+}
+
+/** 未保存时使用的简历初始内容，可通过后台“个人简历”页面覆盖。 */
+export const DEFAULT_RESUME: ResumeDto = {
+  profile: {
+    name: '魏鹏程',
+    headline: '前端开发工程师',
+    summary: '专注于 Web 应用架构、工程化与多端交付，具备前后端协作、团队协作和项目推进经验。',
+    experience: '7 年经验',
+    education: '本科',
+    availability: '在职，考虑机会',
+    location: '福建'
+  },
+  desiredPosition: {
+    position: 'Node.js / 前端开发工程师',
+    industry: '行业不限',
+    salary: '12–15K'
+  },
+  skills: ['HTML5', 'CSS', 'JavaScript', 'Vue 2', 'Vue 3', 'Pinia', 'Qiankun', 'UniApp', 'Node.js', 'NestJS', 'MySQL', 'Git'],
+  experiences: [
+    {
+      id: 'guoke',
+      company: '福建国科信息科技有限公司',
+      title: '前端开发工程师',
+      department: '软件研发中心',
+      start: '2022.05',
+      end: '至今',
+      current: true,
+      skills: ['Vue', 'HTML5', 'CSS', 'JavaScript'],
+      highlights: [
+        '主导 qiankun 微前端架构落地，抽离通用模板，支撑 5+ 子应用快速集成。',
+        '搭建团队工程化体系，集成 ESLint、Prettier、Husky 等规范工具链。',
+        '统筹前端任务、工时评估与跨职能协作，保障核心业务模块高质量交付。'
+      ],
+      responsibilities: [
+        '负责前端架构设计与技术选型，保障项目的可扩展性和可维护性。',
+        '沉淀组件库、工具库和开发规范，提升团队研发效能。',
+        '参与生产部署与运维保障，快速定位和修复线上问题。'
+      ]
+    },
+    {
+      id: 'offcn',
+      company: '北京中公教育科技有限公司福建分公司',
+      title: 'Web 前端开发工程师',
+      department: '网推部',
+      start: '2020.03',
+      end: '至今',
+      current: true,
+      skills: ['Vue', 'HTML5', 'JavaScript', 'CSS', 'UniApp'],
+      highlights: ['负责小程序、后台管理系统与接口开发，参与需求研讨、交付和文档编写。'],
+      responsibilities: ['完成业务功能的前后端开发与维护，支持小程序和管理端持续迭代。']
+    },
+    {
+      id: 'weijian',
+      company: '福建微建网络科技有限公司',
+      title: 'PHP 开发工程师',
+      department: '研发',
+      start: '2019.12',
+      end: '2020.03',
+      current: false,
+      skills: ['HTML', 'PHP', '微信小程序'],
+      highlights: ['完成 PC 页面与微信小程序的开发、调试和维护。'],
+      responsibilities: ['根据开发任务交付页面与功能模块。']
+    }
+  ],
+  projects: [
+    {
+      id: 'huli-bike',
+      name: '湖里城市大脑一期：共享单车',
+      role: '前端开发工程师',
+      start: '2023.01',
+      end: '至今',
+      description: '融合 AI 视频识别与大数据分析，实现单车违规停放识别、企业考核、区域热力分析与移动执法。',
+      stack: ['Vue 3', 'Pinia', 'Element Plus', 'ECharts', 'ArcGIS API', 'UniApp'],
+      highlights: ['搭建 PC 管理端与移动执法端架构，制定开发规范。', '实现 GIS 可视化、违规趋势和区域分析等核心模块。', '通过代码分割、资源压缩与 CDN 加速将首屏优化至 2 秒内。']
+    },
+    {
+      id: 'huli-portal',
+      name: '湖里城市大脑一期：统一门户',
+      role: '前端开发工程师',
+      start: '2023.01',
+      end: '至今',
+      description: '构建统一身份认证、权限管理、数据互通和业务系统集成的区级数字化治理门户。',
+      stack: ['Vue 2', 'Vuex', 'Element UI', 'ArcGIS API for JavaScript'],
+      highlights: ['负责前端架构与 UI 标准，协调三人前端团队交付。', '实现统一门户、数据看板与 GIS 地图能力。', '完成主流浏览器兼容与自动化构建部署流程。']
+    },
+    {
+      id: 'talent-platform',
+      name: '国网数字化人才培育评价平台',
+      role: '前端工程师',
+      start: '2022.05',
+      end: '至今',
+      description: '提供线上学习、线下培训关联和业绩评价查询的一站式数字化人才服务。',
+      stack: ['Vue 3', 'Vuex', 'Qiankun', 'Element UI', 'UniApp'],
+      highlights: ['独立完成学习中心、评价体系等 5+ 核心模块。', '搭建 CI/CD 发布流程，提升部署效率。', '承担需求拆解、现场部署与团队资源协调。']
+    }
+  ],
+  education: [
+    {
+      id: 'uestc',
+      school: '电子科技大学',
+      degree: '本科 · 非全日制',
+      major: '软件工程',
+      start: '2017',
+      end: '2021',
+      description: '软件工程专业学习。'
+    },
+    {
+      id: 'hnyh',
+      school: '湖南石油化工职业技术学院',
+      degree: '大专',
+      major: '石油化工生产技术',
+      start: '2014',
+      end: '2017',
+      description: ''
+    }
+  ]
 }
 
 // ---------- 附件 ----------

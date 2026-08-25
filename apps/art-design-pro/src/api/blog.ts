@@ -180,6 +180,12 @@ export const blogApi = {
   updateSettings(params: Api.Blog.SiteSettings) {
     return request.put<Api.Blog.SiteSettings>({ url: '/admin/settings', params })
   },
+  getResume() {
+    return request.get<Api.Blog.Resume>({ url: '/admin/resume' })
+  },
+  updateResume(params: Api.Blog.Resume) {
+    return request.put<Api.Blog.Resume>({ url: '/admin/resume', params })
+  },
   upload(file: File, onProgress?: (percent: number) => void) {
     const data = new FormData()
     data.append('file', file)

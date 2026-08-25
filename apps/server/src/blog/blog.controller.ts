@@ -62,6 +62,11 @@ export class BlogController {
     return this.blogService.siteConfig()
   }
 
+  @Get('site/resume')
+  resume() {
+    return this.blogService.getResume()
+  }
+
   @Get('links')
   listLinks() {
     return this.blogService.listLinks()

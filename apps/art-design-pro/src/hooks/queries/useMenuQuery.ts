@@ -33,10 +33,9 @@ export function useMenuQuery(options?: UseMenuQueryOptions) {
     queryKey,
     queryFn: fetchAppMenuList,
     enabled: () => userStore.isLogin && (unref(options?.enabled) ?? true),
-    // 动态路由守卫先通过 queryClient.fetchQuery() 拉取并注册该菜单；布局仅订阅同一缓存，
-    // 不在挂载时发起第二次请求，也不回写 menuStore。
-    staleTime: Infinity,
-    refetchOnMount: false,
+    // 后台菜单可能由站点设置或迁移新增，重新挂载时校验远端数据，避免长期使用旧路由树。
+    staleTime: 0,
+    refetchOnMount: 'always',
     gcTime: 5 * 60 * 1000
   })
 

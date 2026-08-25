@@ -207,7 +207,9 @@ function ensureDynamicRoutes(router: Router): Promise<AppRouteRecord[]> {
         userId: userStore.info?.userId,
         mode: import.meta.env.VITE_ACCESS_MODE
       }),
-      queryFn: fetchAppMenuList
+      queryFn: fetchAppMenuList,
+      // 菜单为可在后台维护的数据，路由初始化时必须重新校验，不能复用永久新鲜缓存。
+      staleTime: 0
     })
     assertCurrentSession()
 

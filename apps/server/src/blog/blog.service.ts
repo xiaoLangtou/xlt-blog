@@ -5,8 +5,10 @@ import {
   ArticleStatus,
   CommentStatus,
   DEFAULT_MENUS,
+  DEFAULT_RESUME,
   DEFAULT_THEME_COLOR,
   MenuItemConfig,
+  ResumeDto,
   SiteConfig,
   SiteStats
 } from '@xlt-blog/shared'
@@ -89,7 +91,7 @@ export class BlogService {
     if (!column) throw new NotFoundException('专栏不存在')
     const relations = await this.em.find(
       ColumnArticle,
-      { column: column.id },
+      { column: column.id, article: { status: ArticleStatus.Published } },
       { populate: ['article'], orderBy: { sort: 'ASC' } }
     )
     return {
@@ -196,6 +198,11 @@ export class BlogService {
 
   listLinks() {
     return this.em.find(FriendLink, {}, { orderBy: { sort: 'ASC', id: 'ASC' } })
+  }
+
+  async getResume(): Promise<ResumeDto> {
+    const setting = await this.em.findOne(Setting, { key: 'resume' })
+    return (setting?.value as ResumeDto | undefined) ?? DEFAULT_RESUME
   }
 
   async getPageBySlug(slug: string) {

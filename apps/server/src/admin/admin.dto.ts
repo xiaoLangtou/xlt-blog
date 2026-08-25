@@ -285,6 +285,65 @@ export class SaveSettingsDto {
   menus?: MenuItemDto[]
 }
 
+class ResumeProfileDto {
+  @IsString() @IsNotEmpty() @MaxLength(100) name!: string
+  @IsString() @IsNotEmpty() @MaxLength(100) headline!: string
+  @IsString() @MaxLength(2000) summary!: string
+  @IsString() @MaxLength(50) experience!: string
+  @IsString() @MaxLength(100) education!: string
+  @IsString() @MaxLength(100) availability!: string
+  @IsString() @MaxLength(100) location!: string
+}
+
+class ResumeDesiredPositionDto {
+  @IsString() @MaxLength(100) position!: string
+  @IsString() @MaxLength(100) industry!: string
+  @IsString() @MaxLength(100) salary!: string
+}
+
+class ResumeExperienceDto {
+  @IsString() @IsNotEmpty() @MaxLength(100) id!: string
+  @IsString() @IsNotEmpty() @MaxLength(200) company!: string
+  @IsString() @IsNotEmpty() @MaxLength(100) title!: string
+  @IsString() @MaxLength(100) department!: string
+  @IsString() @MaxLength(30) start!: string
+  @IsString() @MaxLength(30) end!: string
+  @IsBoolean() current!: boolean
+  @IsArray() @IsString({ each: true }) @MaxLength(100, { each: true }) skills!: string[]
+  @IsArray() @IsString({ each: true }) @MaxLength(1000, { each: true }) highlights!: string[]
+  @IsArray() @IsString({ each: true }) @MaxLength(1000, { each: true }) responsibilities!: string[]
+}
+
+class ResumeProjectDto {
+  @IsString() @IsNotEmpty() @MaxLength(100) id!: string
+  @IsString() @IsNotEmpty() @MaxLength(200) name!: string
+  @IsString() @MaxLength(100) role!: string
+  @IsString() @MaxLength(30) start!: string
+  @IsString() @MaxLength(30) end!: string
+  @IsString() @MaxLength(3000) description!: string
+  @IsArray() @IsString({ each: true }) @MaxLength(100, { each: true }) stack!: string[]
+  @IsArray() @IsString({ each: true }) @MaxLength(1000, { each: true }) highlights!: string[]
+}
+
+class ResumeEducationDto {
+  @IsString() @IsNotEmpty() @MaxLength(100) id!: string
+  @IsString() @IsNotEmpty() @MaxLength(200) school!: string
+  @IsString() @MaxLength(100) degree!: string
+  @IsString() @MaxLength(100) major!: string
+  @IsString() @MaxLength(30) start!: string
+  @IsString() @MaxLength(30) end!: string
+  @IsString() @MaxLength(1000) description!: string
+}
+
+export class SaveResumeDto {
+  @ValidateNested() @Type(() => ResumeProfileDto) profile!: ResumeProfileDto
+  @ValidateNested() @Type(() => ResumeDesiredPositionDto) desiredPosition!: ResumeDesiredPositionDto
+  @IsArray() @IsString({ each: true }) @MaxLength(100, { each: true }) skills!: string[]
+  @IsArray() @ValidateNested({ each: true }) @Type(() => ResumeExperienceDto) experiences!: ResumeExperienceDto[]
+  @IsArray() @ValidateNested({ each: true }) @Type(() => ResumeProjectDto) projects!: ResumeProjectDto[]
+  @IsArray() @ValidateNested({ each: true }) @Type(() => ResumeEducationDto) education!: ResumeEducationDto[]
+}
+
 export class AdminAttachmentQueryDto {
   @IsOptional()
   @Type(() => Number)

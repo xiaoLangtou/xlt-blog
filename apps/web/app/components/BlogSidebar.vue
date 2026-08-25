@@ -12,6 +12,13 @@ const statItems = computed(() => [
   { label: '标签', value: stats.value?.tagCount ?? 0 },
   { label: '阅读', value: stats.value?.totalViews ?? 0 }
 ])
+
+// 侧栏仅展示文章数最多的十个标签；同数量时按名称保持稳定顺序。
+const topTags = computed(() =>
+  [...(tags.value ?? [])]
+    .sort((a, b) => (b.articleCount ?? 0) - (a.articleCount ?? 0) || a.name.localeCompare(b.name, 'zh-CN'))
+    .slice(0, 10)
+)
 </script>
 
 <template>
@@ -59,14 +66,17 @@ const statItems = computed(() => [
     </section>
 
     <!-- 标签云 -->
-    <section v-if="tags?.length">
-      <h2 class="flex items-baseline gap-2 border-b border-default/60 pb-2 mb-3">
-        <span class="font-display text-base text-highlighted tracking-widest">标签</span>
-        <span class="font-mono text-[10px] tracking-[0.2em] text-dimmed uppercase">Tags</span>
-      </h2>
+    <section v-if="topTags.length">
+      <div class="flex items-baseline justify-between gap-3 border-b border-default/60 pb-2 mb-3">
+        <h2 class="flex items-baseline gap-2">
+          <span class="font-display text-base text-highlighted tracking-widest">热门标签</span>
+          <span class="font-mono text-[10px] tracking-[0.2em] text-dimmed uppercase">Top 10</span>
+        </h2>
+        <NuxtLink to="/tags" class="text-xs text-dimmed hover:text-primary transition-colors">全部</NuxtLink>
+      </div>
       <div class="flex flex-wrap gap-2">
         <NuxtLink
-          v-for="tag in tags"
+          v-for="tag in topTags"
           :key="tag.id"
           :to="`/tags/${tag.slug}`"
           class="inline-flex items-baseline gap-1 px-2.5 py-1 rounded-xs border border-default/70 bg-elevated/30 text-xs text-muted hover:text-primary hover:border-primary/50 transition-colors"
@@ -77,9 +87,9 @@ const statItems = computed(() => [
       </div>
     </section>
 
-    <!-- 归档入口 -->
+    <!-- 时间轴入口 -->
     <section class="border border-default/70 rounded-xs px-4 py-3 bg-elevated/20">
-      <NuxtLink to="/archive" class="group flex items-center justify-between text-sm">
+      <NuxtLink to="/timeline" class="group flex items-center justify-between text-sm">
         <span class="text-muted group-hover:text-primary transition-colors">按时间浏览全部文章</span>
         <span class="font-mono text-xs text-dimmed group-hover:text-primary transition-colors" aria-hidden="true">-&gt;</span>
       </NuxtLink>

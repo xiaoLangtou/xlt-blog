@@ -10,9 +10,11 @@ import {
   CURRENT_RENDERER_VERSION,
   DashboardStats,
   DEFAULT_MENUS,
+  DEFAULT_RESUME,
   DEFAULT_THEME_COLOR,
   EditorType,
   MenuItemConfig,
+  ResumeDto,
   SiteConfig,
   THEME_COLORS
 } from '@xlt-blog/shared'
@@ -44,6 +46,7 @@ import {
   SaveColumnDto,
   SaveFriendLinkDto,
   SavePageDto,
+  SaveResumeDto,
   SaveSettingsDto,
   SaveStorageConfigDto,
   SaveTagDto,
@@ -738,6 +741,19 @@ export class AdminService {
     const row = await this.em.findOne(Setting, { key })
     if (row) row.value = value
     else this.em.persist(this.em.create(Setting, { key, value }))
+  }
+
+  // ---------- 个人简历 ----------
+
+  async getResume(): Promise<ResumeDto> {
+    const setting = await this.em.findOne(Setting, { key: 'resume' })
+    return (setting?.value as ResumeDto | undefined) ?? DEFAULT_RESUME
+  }
+
+  async saveResume(dto: SaveResumeDto): Promise<ResumeDto> {
+    await this.upsertSetting('resume', dto)
+    await this.em.flush()
+    return dto
   }
 
   // ---------- 附件 ----------

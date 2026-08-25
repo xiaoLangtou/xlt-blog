@@ -38,6 +38,7 @@ import {
   SaveColumnDto,
   SaveFriendLinkDto,
   SavePageDto,
+  SaveResumeDto,
   SaveSettingsDto,
   SaveStorageConfigDto,
   SaveTagDto,
@@ -340,6 +341,18 @@ export class AdminController {
   @Put("settings")
   saveSettings(@Body() dto: SaveSettingsDto) {
     return this.adminService.saveSettings(dto);
+  }
+
+  // ---------- 个人简历 ----------
+
+  @Get("resume")
+  getResume() {
+    return this.adminService.getResume();
+  }
+
+  @Put("resume")
+  saveResume(@Body() dto: SaveResumeDto) {
+    return this.adminService.saveResume(dto);
   }
 
   // ---------- 存储 ----------

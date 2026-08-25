@@ -254,6 +254,65 @@ declare namespace Api {
       menus: Array<{ label: string; url: string; sort: number }>
     }
 
+    interface ResumeProfile {
+      name: string
+      headline: string
+      summary: string
+      experience: string
+      education: string
+      availability: string
+      location: string
+    }
+
+    interface ResumeDesiredPosition {
+      position: string
+      industry: string
+      salary: string
+    }
+
+    interface ResumeExperience {
+      id: string
+      company: string
+      title: string
+      department: string
+      start: string
+      end: string
+      current: boolean
+      skills: string[]
+      highlights: string[]
+      responsibilities: string[]
+    }
+
+    interface ResumeProject {
+      id: string
+      name: string
+      role: string
+      start: string
+      end: string
+      description: string
+      stack: string[]
+      highlights: string[]
+    }
+
+    interface ResumeEducation {
+      id: string
+      school: string
+      degree: string
+      major: string
+      start: string
+      end: string
+      description: string
+    }
+
+    interface Resume {
+      profile: ResumeProfile
+      desiredPosition: ResumeDesiredPosition
+      skills: string[]
+      experiences: ResumeExperience[]
+      projects: ResumeProject[]
+      education: ResumeEducation[]
+    }
+
     type StorageBackend = 'local' | 'rusfs' | 's3'
     type StorageS3Provider = 'aws' | 'huawei-obs' | 'aliyun-oss' | 'tencent-cos' | 'custom'
 
