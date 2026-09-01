@@ -504,14 +504,27 @@ export class SaveAdminMenuDto {
 }
 
 
-class LocalStorageConfigDto {
-  @IsOptional()
+export class SaveStorageConfigDto {
+  /** 未指定目标时的默认上传实例；不影响其他实例的可用性。 */
   @IsString()
-  @MaxLength(500)
-  publicUrlPrefix?: string
+  @IsNotEmpty()
+  @MaxLength(64)
+  defaultTargetId!: string
 }
 
-class S3CompatibleStorageConfigDto {
+export class RemoteStorageConfigDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(80)
+  name!: string
+
+  @IsIn(['rusfs', 's3'])
+  kind!: 'rusfs' | 's3'
+
+  @IsOptional()
+  @IsIn(['aws', 'huawei-obs', 'aliyun-oss', 'tencent-cos', 'custom'])
+  provider?: 'aws' | 'huawei-obs' | 'aliyun-oss' | 'tencent-cos' | 'custom'
+
   @IsOptional()
   @IsString()
   @MaxLength(2048)
@@ -547,39 +560,54 @@ class S3CompatibleStorageConfigDto {
   publicUrlBase?: string
 }
 
-class S3StorageConfigDto extends S3CompatibleStorageConfigDto {
+/** 更新时所有字段可选；未填写/脱敏的凭据将保留既有值。 */
+export class UpdateRemoteStorageConfigDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  name?: string
+
+  @IsOptional()
+  @IsIn(['rusfs', 's3'])
+  kind?: 'rusfs' | 's3'
+
   @IsOptional()
   @IsIn(['aws', 'huawei-obs', 'aliyun-oss', 'tencent-cos', 'custom'])
   provider?: 'aws' | 'huawei-obs' | 'aliyun-oss' | 'tencent-cos' | 'custom'
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  endpoint?: string
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  bucket?: string
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1024)
+  accessKey?: string
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1024)
+  secretKey?: string
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  region?: string
+
+  @IsOptional()
+  @IsBoolean()
+  pathStyle?: boolean
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  publicUrlBase?: string
 }
 
-export class SaveStorageConfigDto {
-  @IsOptional()
-  @IsIn(['local', 'rusfs', 's3'])
-  active?: 'local' | 'rusfs' | 's3'
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalStorageConfigDto)
-  local?: LocalStorageConfigDto
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => S3CompatibleStorageConfigDto)
-  rusfs?: S3CompatibleStorageConfigDto
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => S3StorageConfigDto)
-  s3?: S3StorageConfigDto
-}
-
-export class TestStorageConfigDto {
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => SaveStorageConfigDto)
-  config?: SaveStorageConfigDto
-}
-
-/** Intentionally empty: attachment URLs and storage keys are server-side data. */
-export class MigrateStorageDto {}
+export class TestStorageConfigDto extends RemoteStorageConfigDto {}

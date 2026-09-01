@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core'
-import type { StorageBackend } from '../storage/storage.types'
+import type { StorageKind } from '../storage/storage.types'
 
 @Entity({ tableName: 'attachments' })
 export class Attachment {
@@ -19,7 +19,11 @@ export class Attachment {
   size: number = 0
 
   @Property({ default: 'local' })
-  storage: StorageBackend = 'local'
+  storage: StorageKind = 'local'
+
+  /** 固定本地实例为 local；远端附件保存独立配置实例 ID。 */
+  @Property({ nullable: true, length: 64 })
+  storageId: string | null = null
 
   @Property({ nullable: true })
   storageKey: string | null = null

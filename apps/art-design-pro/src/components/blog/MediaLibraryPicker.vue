@@ -16,7 +16,10 @@
     sort: 'date'
   })
 
-  const assetUrl = (url: string) => (url.startsWith('/') ? url : `/${url}`)
+  // 附件 url 可能是本地存储的相对路径，也可能是对象存储（rusfs/s3）返回的绝对地址，
+  // 绝对地址（含协议或以 // 开头）直接使用，避免被错误拼接为 /http://... 形式的无效地址
+  const assetUrl = (url: string) =>
+    /^([a-z][a-z0-9+.-]*:)?\/\//i.test(url) || url.startsWith('/') ? url : `/${url}`
 
   async function load() {
     loading.value = true

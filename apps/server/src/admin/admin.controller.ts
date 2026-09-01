@@ -29,8 +29,8 @@ import {
   AdminCommentQueryDto,
   AdminTagQueryDto,
   ImportArticlesDto,
-  MigrateStorageDto,
   PreviewContentDto,
+  RemoteStorageConfigDto,
   ReplyCommentDto,
   SaveAdminMenuDto,
   SaveArticleDto,
@@ -44,6 +44,7 @@ import {
   SaveTagDto,
   SetColumnArticlesDto,
   TestStorageConfigDto,
+  UpdateRemoteStorageConfigDto,
 } from "./admin.dto";
 import { CompleteAiDto } from "./ai.dto";
 import { AdminService, MAX_IMPORT_FILE_SIZE, type ImportArticleFile } from "./admin.service";
@@ -367,14 +368,29 @@ export class AdminController {
     return this.adminService.saveStorageConfig(dto);
   }
 
-  @Post("storage/test")
-  testStorage(@Body() dto: TestStorageConfigDto) {
+  @Post("storage/remotes")
+  createStorageRemote(@Body() dto: RemoteStorageConfigDto) {
+    return this.adminService.createStorageRemote(dto);
+  }
+
+  @Put("storage/remotes/:id")
+  updateStorageRemote(@Param("id") id: string, @Body() dto: UpdateRemoteStorageConfigDto) {
+    return this.adminService.updateStorageRemote(id, dto);
+  }
+
+  @Delete("storage/remotes/:id")
+  deleteStorageRemote(@Param("id") id: string) {
+    return this.adminService.deleteStorageRemote(id);
+  }
+
+  @Post("storage/remotes/test")
+  testNewStorage(@Body() dto: TestStorageConfigDto) {
     return this.adminService.testStorageConfig(dto);
   }
 
-  @Post("storage/migrate")
-  migrateStorage(@Body() _dto: MigrateStorageDto) {
-    return this.adminService.migrateStorageAttachments();
+  @Post("storage/remotes/:id/test")
+  testExistingStorage(@Param("id") id: string, @Body() dto: TestStorageConfigDto) {
+    return this.adminService.testStorageConfig(dto, id);
   }
 
   // ---------- 附件 ----------
@@ -459,13 +475,17 @@ export class AdminController {
       limits: { fileSize: 200 * 1024 * 1024 },
     }),
   )
-  async upload(@UploadedFile() file?: Express.Multer.File) {
+  async upload(
+    @Body("storageId") storageId: string | undefined,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
     if (!file) throw new BadRequestException("未接收到文件");
     return this.adminService.uploadAttachment({
       filename: Buffer.from(file.originalname, "latin1").toString("utf8"),
       buffer: file.buffer,
       mimeType: file.mimetype,
       size: file.size,
+      storageId: storageId || undefined,
     });
   }
 

@@ -1,33 +1,34 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { BadRequestException, Injectable } from '@nestjs/common'
+import { randomUUID } from 'node:crypto'
 import { Attachment, Setting } from '../entities'
-import type { StorageDriver } from './storage-driver.interface'
 import { LocalStorageDriver } from './local-storage.driver'
 import { S3CompatibleDriver } from './s3-compatible.driver'
 import { StorageCryptoService } from './storage-crypto.service'
-import type {
-  MaskedStorageConfig,
-  S3CompatibleStorageConfig,
-  StorageBackend,
-  StorageConfig,
-  StorageConnectionResult,
-  StorageMigrationResult,
-  StorageObjectInput
+import type { StorageDriver } from './storage-driver.interface'
+import {
+  createDefaultStorageConfig,
+  legacyStorageId,
+  LOCAL_STORAGE_ID,
+  type MaskedRemoteStorageConfig,
+  type MaskedStorageConfig,
+  type RemoteStorageConfig,
+  type S3CompatibleStorageConfig,
+  type StorageConfig,
+  type StorageConnectionResult,
+  type StorageKind,
+  type StorageObjectInput
 } from './storage.types'
-import { STORAGE_BACKENDS, createDefaultStorageConfig } from './storage.types'
 
 const STORAGE_CONFIG_KEY = 'storageConfig'
+const REMOTE_STORAGE_KINDS = ['rusfs', 's3'] as const
+type RemoteStorageKind = (typeof REMOTE_STORAGE_KINDS)[number]
+type RemoteStorageInput = Partial<Omit<RemoteStorageConfig, 'id'>>
 
-type ConfigPayload = {
-  active?: StorageBackend
-  local?: Partial<StorageConfig['local']>
-  rusfs?: Partial<StorageConfig['rusfs']>
-  s3?: Partial<StorageConfig['s3']>
-}
-
+/** 本地存储固定为 local；defaultTargetId 仅为未指定目标的上传默认值。 */
 @Injectable()
 export class StorageService {
-  private readonly drivers = new Map<StorageBackend, StorageDriver>()
+  private readonly drivers = new Map<string, StorageDriver>()
 
   constructor(
     private readonly em: EntityManager,
@@ -35,129 +36,86 @@ export class StorageService {
   ) {}
 
   async getMaskedConfig(): Promise<MaskedStorageConfig> {
-    const config = await this.getConfig()
-    return {
-      active: config.active,
-      local: { ...config.local },
-      rusfs: {
-        ...config.rusfs,
-        accessKey: this.crypto.maskSecret(config.rusfs.accessKey),
-        secretKey: this.crypto.maskSecret(config.rusfs.secretKey)
-      },
-      s3: {
-        ...config.s3,
-        accessKey: this.crypto.maskSecret(config.s3.accessKey),
-        secretKey: this.crypto.maskSecret(config.s3.secretKey)
-      }
-    }
+    return this.toMaskedConfig(await this.getConfig())
   }
 
-  async saveConfig(payload: ConfigPayload): Promise<MaskedStorageConfig> {
-    const stored = await this.getStoredConfig()
-    const current = this.decryptConfig(stored)
-    const config = this.mergeConfig(current, payload)
-    this.validateRemoteUrls(config)
-    this.validateActiveConfig(config)
-    await this.assertRemoteStorageLocationsCanChange(current, config)
-
-    const row = await this.em.findOne(Setting, { key: STORAGE_CONFIG_KEY })
-    const value = this.encryptConfig(config, stored)
-    if (row) row.value = value
-    else this.em.persist(this.em.create(Setting, { key: STORAGE_CONFIG_KEY, value }))
-    await this.em.flush()
-    this.drivers.clear()
-
+  async setDefaultTarget(defaultTargetId: string): Promise<MaskedStorageConfig> {
+    const config = await this.getConfig()
+    this.resolveTarget(defaultTargetId, config)
+    config.defaultTargetId = defaultTargetId
+    await this.persistConfig(config)
     return this.toMaskedConfig(config)
   }
 
-  async put(file: StorageObjectInput) {
+  async createRemote(input: RemoteStorageInput): Promise<MaskedRemoteStorageConfig> {
     const config = await this.getConfig()
-    return this.getDriver(config.active, config).put(file)
+    const remote = this.createRemoteConfig(input)
+    this.validateRemoteUrls(remote)
+    this.createRemoteDriver(remote)
+    config.remotes.push(remote)
+    await this.persistConfig(config)
+    return this.toMaskedRemoteConfig(remote)
   }
 
-  async delete(backend: StorageBackend, key: string): Promise<void> {
+  async updateRemote(id: string, input: RemoteStorageInput): Promise<MaskedRemoteStorageConfig> {
     const config = await this.getConfig()
-    await this.getDriver(backend, config).delete(key)
+    const index = config.remotes.findIndex((remote) => remote.id === id)
+    if (index < 0) throw new BadRequestException('存储配置不存在')
+
+    const current = config.remotes[index]
+    const updated = this.mergeRemoteConfig(current, input)
+    this.validateRemoteUrls(updated)
+    await this.assertRemoteLocationCanChange(current, updated)
+    this.createRemoteDriver(updated)
+    config.remotes[index] = updated
+    await this.persistConfig(config)
+    return this.toMaskedRemoteConfig(updated)
   }
 
-  async testConfig(payload?: ConfigPayload): Promise<StorageConnectionResult> {
+  async deleteRemote(id: string): Promise<void> {
+    const config = await this.getConfig()
+    if (!config.remotes.some((item) => item.id === id)) {
+      throw new BadRequestException('存储配置不存在')
+    }
+    if (config.defaultTargetId === id) {
+      throw new BadRequestException('请先将默认上传存储切换为其他实例，再删除此配置')
+    }
+    if (await this.hasAttachedObjects(id)) {
+      throw new BadRequestException('该存储实例仍有关联附件，不能删除')
+    }
+
+    config.remotes = config.remotes.filter((item) => item.id !== id)
+    await this.persistConfig(config)
+  }
+
+  async testRemote(input: RemoteStorageInput, id?: string): Promise<StorageConnectionResult> {
     try {
-      const current = await this.getConfig()
-      const config = payload ? this.mergeConfig(current, payload) : current
-      this.validateRemoteUrls(config)
-      this.validateActiveConfig(config)
-      const driver = this.createDriver(config.active, config)
-
-      if (driver instanceof S3CompatibleDriver) {
-        await driver.testConnection()
-      } else {
-        const probe = await driver.put({
-          name: 'storage-probe.txt',
-          buffer: Buffer.from('xlt-blog storage probe'),
-          mimeType: 'text/plain'
-        })
-        await driver.delete(probe.key)
-      }
-
+      const config = await this.getConfig()
+      const existing = id ? config.remotes.find((remote) => remote.id === id) : undefined
+      if (id && !existing) throw new BadRequestException('存储配置不存在')
+      const remote = existing ? this.mergeRemoteConfig(existing, input) : this.createRemoteConfig(input, 'test-target')
+      this.validateRemoteUrls(remote)
+      await this.createRemoteDriver(remote).testConnection()
       return { success: true, message: '存储连接成功' }
     } catch {
       return { success: false, message: '存储连接失败，请检查配置和网络连接' }
     }
   }
 
-  async migrateAttachments(): Promise<StorageMigrationResult> {
+  async put(file: StorageObjectInput, targetId?: string) {
     const config = await this.getConfig()
-    const activeDriver = this.getDriver(config.active, config)
-    const attachments = await this.em.find(Attachment, {})
-    const result: StorageMigrationResult = {
-      total: attachments.length,
-      migrated: 0,
-      failed: 0,
-      failures: []
-    }
+    const id = targetId || config.defaultTargetId
+    const result = await this.getDriver(id, config).put(file)
+    return { ...result, storageId: id }
+  }
 
-    for (const attachment of attachments) {
-      if (!attachment.storageKey) {
-        this.recordMigrationFailure(result, attachment.id, attachment.filename, '附件缺少存储对象键')
-        continue
-      }
-      if (attachment.storage === config.active) continue
-      if (!attachment.storage || !this.isStorageBackend(attachment.storage)) {
-        this.recordMigrationFailure(result, attachment.id, attachment.filename, '附件存储后端无效')
-        continue
-      }
+  async delete(storageId: string, key: string): Promise<void> {
+    const config = await this.getConfig()
+    await this.getDriver(storageId, config).delete(key)
+  }
 
-      try {
-        const source = this.getDriver(attachment.storage, config)
-        const buffer = await source.read(attachment.storageKey)
-        const uploaded = await activeDriver.put({
-          name: attachment.filename,
-          buffer,
-          mimeType: attachment.mimeType
-        })
-        const previousStorage = attachment.storage
-        const previousStorageKey = attachment.storageKey
-        const previousUrl = attachment.url
-
-        try {
-          attachment.storage = uploaded.storage
-          attachment.storageKey = uploaded.key
-          attachment.url = uploaded.url
-          await this.em.flush()
-          result.migrated++
-        } catch {
-          attachment.storage = previousStorage
-          attachment.storageKey = previousStorageKey
-          attachment.url = previousUrl
-          await activeDriver.delete(uploaded.key).catch(() => undefined)
-          this.recordMigrationFailure(result, attachment.id, attachment.filename, '附件迁移失败')
-        }
-      } catch {
-        this.recordMigrationFailure(result, attachment.id, attachment.filename, '附件迁移失败')
-      }
-    }
-
-    return result
+  getAttachmentStorageId(attachment: Pick<Attachment, 'storage' | 'storageId'>): string {
+    return attachment.storageId || legacyStorageId(attachment.storage)
   }
 
   private async getConfig(): Promise<StorageConfig> {
@@ -169,51 +127,75 @@ export class StorageService {
     return this.normalizeConfig(row?.value)
   }
 
-  private getDriver(backend: StorageBackend, config: StorageConfig): StorageDriver {
-    const cached = this.drivers.get(backend)
+  private async persistConfig(config: StorageConfig): Promise<void> {
+    const row = await this.em.findOne(Setting, { key: STORAGE_CONFIG_KEY })
+    const value = this.encryptConfig(config)
+    if (row) row.value = value
+    else this.em.persist(this.em.create(Setting, { key: STORAGE_CONFIG_KEY, value }))
+    await this.em.flush()
+    this.drivers.clear()
+  }
+
+  private getDriver(id: string, config: StorageConfig): StorageDriver {
+    const cached = this.drivers.get(id)
     if (cached) return cached
 
-    const driver = this.createDriver(backend, config)
-    this.drivers.set(backend, driver)
+    const target = this.resolveTarget(id, config)
+    const driver = target === 'local'
+      ? new LocalStorageDriver(config.local)
+      : this.createRemoteDriver(target)
+    this.drivers.set(id, driver)
     return driver
   }
 
-  private createDriver(backend: StorageBackend, config: StorageConfig): StorageDriver {
-    if (backend === 'local') return new LocalStorageDriver(config.local)
-    return new S3CompatibleDriver(backend, config[backend])
+  private resolveTarget(id: string, config: StorageConfig): 'local' | RemoteStorageConfig {
+    if (id === LOCAL_STORAGE_ID) return 'local'
+    const target = config.remotes.find((remote) => remote.id === id)
+    if (!target) throw new BadRequestException('存储配置不存在')
+    return target
   }
 
-  private validateActiveConfig(config: StorageConfig) {
-    if (config.active !== 'local') this.createDriver(config.active, config)
+  private createRemoteDriver(remote: RemoteStorageConfig): S3CompatibleDriver {
+    return new S3CompatibleDriver(remote.kind, remote)
   }
 
-  private async assertRemoteStorageLocationsCanChange(current: StorageConfig, config: StorageConfig) {
-    for (const backend of ['rusfs', 's3'] as const) {
-      if (!this.isRemoteStorageLocationChanged(current[backend], config[backend])) continue
-
-      const attachment = await this.em.findOne(Attachment, { storage: backend })
-      if (attachment) {
-        throw new BadRequestException(
-          '该存储后端仍有关联附件，不能直接变更 endpoint 或 bucket；请先迁移到其他后端'
-        )
-      }
+  private async assertRemoteLocationCanChange(
+    current: RemoteStorageConfig,
+    updated: RemoteStorageConfig
+  ): Promise<void> {
+    if (!this.isRemoteLocationChanged(current, updated)) return
+    if (await this.hasAttachedObjects(current.id)) {
+      throw new BadRequestException('该存储实例仍有关联附件，不能变更 endpoint 或 bucket')
     }
   }
 
-  private isRemoteStorageLocationChanged(
+  private async hasAttachedObjects(storageId: string): Promise<boolean> {
+    const existing = await this.em.findOne(Attachment, { storageId })
+    if (existing) return true
+
+    // 为升级前记录保留兼容：旧 storage 字段只记录驱动类型，映射到稳定的 legacy 实例。
+    if (storageId === legacyStorageId('rusfs')) {
+      return Boolean(await this.em.findOne(Attachment, { storage: 'rusfs', storageId: null }))
+    }
+    if (storageId === legacyStorageId('s3')) {
+      return Boolean(await this.em.findOne(Attachment, { storage: 's3', storageId: null }))
+    }
+    return false
+  }
+
+  private isRemoteLocationChanged(
     current: S3CompatibleStorageConfig,
-    config: S3CompatibleStorageConfig
-  ) {
+    updated: S3CompatibleStorageConfig
+  ): boolean {
     return (
-      this.normalizeRemoteEndpoint(current.endpoint) !== this.normalizeRemoteEndpoint(config.endpoint) ||
-      this.normalizeRemoteBucket(current.bucket) !== this.normalizeRemoteBucket(config.bucket)
+      this.normalizeEndpoint(current.endpoint) !== this.normalizeEndpoint(updated.endpoint) ||
+      current.bucket.trim() !== updated.bucket.trim()
     )
   }
 
-  private normalizeRemoteEndpoint(value: string | undefined): string {
+  private normalizeEndpoint(value?: string): string {
     const endpoint = value?.trim() ?? ''
     if (!endpoint) return ''
-
     try {
       return new URL(endpoint).toString().replace(/\/+$/, '')
     } catch {
@@ -221,64 +203,131 @@ export class StorageService {
     }
   }
 
-  private normalizeRemoteBucket(value: string): string {
-    return value.trim()
+  private validateRemoteUrls(remote: S3CompatibleStorageConfig): void {
+    this.validateRemoteUrl(remote.endpoint)
+    this.validateRemoteUrl(remote.publicUrlBase)
   }
 
-  private validateRemoteUrls(config: StorageConfig) {
-    for (const remote of [config.rusfs, config.s3]) {
-      this.validateRemoteUrl(remote.endpoint)
-      this.validateRemoteUrl(remote.publicUrlBase)
-    }
-  }
-
-  private validateRemoteUrl(value?: string) {
+  private validateRemoteUrl(value?: string): void {
     const urlValue = value?.trim()
     if (!urlValue) return
-
     try {
       const url = new URL(urlValue)
-      if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error()
-      if (url.username || url.password) throw new Error()
+      if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw new Error()
     } catch {
       throw new BadRequestException('存储服务地址无效')
     }
   }
 
   private normalizeConfig(value: unknown): StorageConfig {
-    const defaults = createDefaultStorageConfig()
     const input = this.asRecord(value)
-    const active = this.isStorageBackend(input?.active) ? input.active : defaults.active
-    const local = this.asRecord(input?.local)
-    const rusfs = this.asRecord(input?.rusfs)
-    const s3 = this.asRecord(input?.s3)
+    if (Array.isArray(input?.remotes)) return this.normalizeNewConfig(input)
+    return this.normalizeLegacyConfig(input)
+  }
 
+  private normalizeNewConfig(input: Record<string, unknown>): StorageConfig {
+    const remotes = (input.remotes as unknown[])
+      .map((remote) => this.normalizeRemoteConfig(this.asRecord(remote)))
+      .filter((remote): remote is RemoteStorageConfig => Boolean(remote))
+    const defaultTargetId = this.stringValue(input.defaultTargetId, LOCAL_STORAGE_ID) ?? LOCAL_STORAGE_ID
     return {
-      active,
-      local: {
-        publicUrlPrefix: this.stringValue(local?.publicUrlPrefix, defaults.local.publicUrlPrefix)
-      },
-      rusfs: this.normalizeRemoteConfig(rusfs, defaults.rusfs),
-      s3: {
-        ...this.normalizeRemoteConfig(s3, defaults.s3),
-        provider: this.isS3Provider(s3?.provider) ? s3.provider : defaults.s3.provider
-      }
+      defaultTargetId: defaultTargetId === LOCAL_STORAGE_ID || remotes.some((remote) => remote.id === defaultTargetId)
+        ? defaultTargetId
+        : LOCAL_STORAGE_ID,
+      local: { publicUrlPrefix: '/uploads' },
+      remotes
+    }
+  }
+
+  private normalizeLegacyConfig(input: Record<string, unknown> | undefined): StorageConfig {
+    const defaults = createDefaultStorageConfig()
+    const remotes: RemoteStorageConfig[] = []
+    const rusfs = this.normalizeLegacyRemote('rusfs', this.asRecord(input?.rusfs))
+    const s3 = this.normalizeLegacyRemote('s3', this.asRecord(input?.s3))
+    if (rusfs) remotes.push(rusfs)
+    if (s3) remotes.push(s3)
+
+    const legacyActive = input?.active
+    const defaultTargetId = legacyActive === 'rusfs'
+      ? legacyStorageId('rusfs')
+      : legacyActive === 's3'
+        ? legacyStorageId('s3')
+        : defaults.defaultTargetId
+    return { ...defaults, defaultTargetId, remotes }
+  }
+
+  private normalizeLegacyRemote(
+    kind: RemoteStorageKind,
+    input: Record<string, unknown> | undefined
+  ): RemoteStorageConfig | undefined {
+    if (!input || !['endpoint', 'bucket', 'accessKey', 'secretKey'].some((key) => this.stringValue(input[key], '')?.trim())) {
+      return undefined
+    }
+    return this.buildRemoteConfig({
+      id: legacyStorageId(kind),
+      name: kind === 'rusfs' ? '旧版 RustFS 存储' : '旧版对象存储',
+      kind,
+      ...input
+    })
+  }
+
+  private normalizeRemoteConfig(input: Record<string, unknown> | undefined): RemoteStorageConfig | undefined {
+    if (!input || !this.isStorageId(input.id) || !this.isRemoteStorageKind(input.kind)) return undefined
+    return this.buildRemoteConfig(input)
+  }
+
+  private createRemoteConfig(input: RemoteStorageInput, id = `storage-${randomUUID()}`): RemoteStorageConfig {
+    return this.buildRemoteConfig({ ...input, id })
+  }
+
+  private mergeRemoteConfig(current: RemoteStorageConfig, input: RemoteStorageInput): RemoteStorageConfig {
+    return this.buildRemoteConfig({
+      ...current,
+      ...input,
+      id: current.id,
+      kind: current.kind,
+      accessKey: this.credentialValue(input.accessKey, current.accessKey),
+      secretKey: this.credentialValue(input.secretKey, current.secretKey)
+    })
+  }
+
+  private buildRemoteConfig(input: Record<string, unknown>): RemoteStorageConfig {
+    const kind = this.isRemoteStorageKind(input.kind) ? input.kind : 's3'
+    const name = this.stringValue(input.name, '')?.trim() || (kind === 'rusfs' ? 'RustFS 存储' : '对象存储')
+    return {
+      id: this.isStorageId(input.id) ? input.id : `storage-${randomUUID()}`,
+      name,
+      kind,
+      endpoint: this.stringValue(input.endpoint, ''),
+      bucket: this.stringValue(input.bucket, '') ?? '',
+      accessKey: this.stringValue(input.accessKey, '') ?? '',
+      secretKey: this.stringValue(input.secretKey, '') ?? '',
+      region: this.stringValue(input.region, ''),
+      pathStyle: typeof input.pathStyle === 'boolean' ? input.pathStyle : kind === 'rusfs',
+      publicUrlBase: this.stringValue(input.publicUrlBase, ''),
+      ...(kind === 's3' ? { provider: this.isS3Provider(input.provider) ? input.provider : 'aws' } : {})
     }
   }
 
   private decryptConfig(config: StorageConfig): StorageConfig {
     return {
       ...config,
-      rusfs: this.decryptRemoteConfig(config.rusfs),
-      s3: this.decryptRemoteConfig(config.s3)
+      remotes: config.remotes.map((remote) => ({
+        ...remote,
+        accessKey: this.decryptCredential(remote.accessKey),
+        secretKey: this.decryptCredential(remote.secretKey)
+      }))
     }
   }
 
-  private decryptRemoteConfig<T extends S3CompatibleStorageConfig>(config: T): T {
+  private encryptConfig(config: StorageConfig): StorageConfig {
     return {
       ...config,
-      accessKey: this.decryptCredential(config.accessKey),
-      secretKey: this.decryptCredential(config.secretKey)
+      remotes: config.remotes.map((remote) => ({
+        ...remote,
+        accessKey: remote.accessKey ? this.crypto.encrypt(remote.accessKey) : '',
+        secretKey: remote.secretKey ? this.crypto.encrypt(remote.secretKey) : ''
+      }))
     }
   }
 
@@ -288,75 +337,6 @@ export class StorageService {
       return this.crypto.decrypt(value)
     } catch {
       return ''
-    }
-  }
-
-  private encryptConfig(config: StorageConfig, stored: StorageConfig): StorageConfig {
-    return {
-      ...config,
-      rusfs: this.encryptRemoteConfig(config.rusfs, stored.rusfs),
-      s3: this.encryptRemoteConfig(config.s3, stored.s3)
-    }
-  }
-
-  private encryptRemoteConfig<T extends S3CompatibleStorageConfig>(config: T, stored: T): T {
-    return {
-      ...config,
-      accessKey: config.accessKey ? this.crypto.encrypt(config.accessKey) : this.encryptedCredential(stored.accessKey),
-      secretKey: config.secretKey ? this.crypto.encrypt(config.secretKey) : this.encryptedCredential(stored.secretKey)
-    }
-  }
-
-  private encryptedCredential(value: string): string {
-    return value.startsWith('v1:') ? value : ''
-  }
-
-  private mergeConfig(current: StorageConfig, payload: ConfigPayload): StorageConfig {
-    const input = this.asRecord(payload) ?? {}
-    const local = this.asRecord(input.local)
-    const rusfs = this.asRecord(input.rusfs)
-    const s3 = this.asRecord(input.s3)
-
-    return {
-      active: this.isStorageBackend(input.active) ? input.active : current.active,
-      local: {
-        publicUrlPrefix: this.stringValue(local?.publicUrlPrefix, current.local.publicUrlPrefix)
-      },
-      rusfs: this.mergeRemoteConfig(current.rusfs, rusfs),
-      s3: {
-        ...this.mergeRemoteConfig(current.s3, s3),
-        provider: this.isS3Provider(s3?.provider) ? s3.provider : current.s3.provider
-      }
-    }
-  }
-
-  private mergeRemoteConfig(
-    current: S3CompatibleStorageConfig,
-    input: Record<string, unknown> | undefined
-  ): S3CompatibleStorageConfig {
-    return {
-      endpoint: this.stringValue(input?.endpoint, current.endpoint),
-      bucket: this.stringValue(input?.bucket, current.bucket) ?? '',
-      accessKey: this.credentialValue(input?.accessKey, current.accessKey),
-      secretKey: this.credentialValue(input?.secretKey, current.secretKey),
-      region: this.stringValue(input?.region, current.region),
-      pathStyle: typeof input?.pathStyle === 'boolean' ? input.pathStyle : current.pathStyle,
-      publicUrlBase: this.stringValue(input?.publicUrlBase, current.publicUrlBase)
-    }
-  }
-
-  private normalizeRemoteConfig(
-    input: Record<string, unknown> | undefined,
-    defaults: S3CompatibleStorageConfig
-  ): S3CompatibleStorageConfig {
-    return {
-      endpoint: this.stringValue(input?.endpoint, defaults.endpoint),
-      bucket: this.stringValue(input?.bucket, defaults.bucket) ?? '',
-      accessKey: this.stringValue(input?.accessKey, defaults.accessKey) ?? '',
-      secretKey: this.stringValue(input?.secretKey, defaults.secretKey) ?? '',
-      region: this.stringValue(input?.region, defaults.region),
-      pathStyle: typeof input?.pathStyle === 'boolean' ? input.pathStyle : defaults.pathStyle,
-      publicUrlBase: this.stringValue(input?.publicUrlBase, defaults.publicUrlBase)
     }
   }
 
@@ -374,29 +354,18 @@ export class StorageService {
 
   private toMaskedConfig(config: StorageConfig): MaskedStorageConfig {
     return {
-      active: config.active,
-      local: { ...config.local },
-      rusfs: {
-        ...config.rusfs,
-        accessKey: this.crypto.maskSecret(config.rusfs.accessKey),
-        secretKey: this.crypto.maskSecret(config.rusfs.secretKey)
-      },
-      s3: {
-        ...config.s3,
-        accessKey: this.crypto.maskSecret(config.s3.accessKey),
-        secretKey: this.crypto.maskSecret(config.s3.secretKey)
-      }
+      defaultTargetId: config.defaultTargetId,
+      local: { publicUrlPrefix: '/uploads' },
+      remotes: config.remotes.map((remote) => this.toMaskedRemoteConfig(remote))
     }
   }
 
-  private recordMigrationFailure(
-    result: StorageMigrationResult,
-    id: number,
-    filename: string,
-    error: string
-  ) {
-    result.failed++
-    result.failures.push({ id, filename, error })
+  private toMaskedRemoteConfig(remote: RemoteStorageConfig): MaskedRemoteStorageConfig {
+    return {
+      ...remote,
+      accessKey: this.crypto.maskSecret(remote.accessKey),
+      secretKey: this.crypto.maskSecret(remote.secretKey)
+    }
   }
 
   private asRecord(value: unknown): Record<string, unknown> | undefined {
@@ -409,17 +378,15 @@ export class StorageService {
     return typeof value === 'string' ? value : fallback
   }
 
-  private isStorageBackend(value: unknown): value is StorageBackend {
-    return typeof value === 'string' && (STORAGE_BACKENDS as readonly string[]).includes(value)
+  private isStorageId(value: unknown): value is string {
+    return typeof value === 'string' && /^[a-z][a-z0-9_-]{0,63}$/i.test(value)
   }
 
-  private isS3Provider(value: unknown): value is StorageConfig['s3']['provider'] {
-    return (
-      value === 'aws' ||
-      value === 'huawei-obs' ||
-      value === 'aliyun-oss' ||
-      value === 'tencent-cos' ||
-      value === 'custom'
-    )
+  private isRemoteStorageKind(value: unknown): value is RemoteStorageKind {
+    return typeof value === 'string' && (REMOTE_STORAGE_KINDS as readonly string[]).includes(value)
+  }
+
+  private isS3Provider(value: unknown): value is RemoteStorageConfig['provider'] {
+    return ['aws', 'huawei-obs', 'aliyun-oss', 'tencent-cos', 'custom'].includes(value as string)
   }
 }

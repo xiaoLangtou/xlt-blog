@@ -49,9 +49,11 @@ import {
   SaveResumeDto,
   SaveSettingsDto,
   SaveStorageConfigDto,
+  RemoteStorageConfigDto,
   SaveTagDto,
   SetColumnArticlesDto,
-  TestStorageConfigDto
+  TestStorageConfigDto,
+  UpdateRemoteStorageConfigDto
 } from './admin.dto'
 import { StorageService } from '../storage/storage.service'
 
@@ -833,12 +835,21 @@ export class AdminService {
     return list.map((p) => ({ mimeType: { $like: `${p}%` } }))
   }
 
-  async uploadAttachment(data: { filename: string; buffer: Buffer; mimeType: string; size: number }) {
-    const uploaded = await this.storageService.put({
-      name: data.filename,
-      buffer: data.buffer,
-      mimeType: data.mimeType
-    })
+  async uploadAttachment(data: {
+    filename: string
+    buffer: Buffer
+    mimeType: string
+    size: number
+    storageId?: string
+  }) {
+    const uploaded = await this.storageService.put(
+      {
+        name: data.filename,
+        buffer: data.buffer,
+        mimeType: data.mimeType
+      },
+      data.storageId
+    )
 
     try {
       const attachment = this.em.create(Attachment, {
@@ -847,13 +858,14 @@ export class AdminService {
         mimeType: data.mimeType,
         size: data.size,
         storage: uploaded.storage,
+        storageId: uploaded.storageId,
         storageKey: uploaded.key,
         createdAt: new Date()
       })
       await this.em.persistAndFlush(attachment)
       return { url: uploaded.url }
     } catch (error) {
-      await this.storageService.delete(uploaded.storage, uploaded.key).catch(() => undefined)
+      await this.storageService.delete(uploaded.storageId, uploaded.key).catch(() => undefined)
       throw error
     }
   }
@@ -861,7 +873,7 @@ export class AdminService {
   async deleteAttachment(id: number) {
     const attachment = await this.em.findOneOrFail(Attachment, { id })
     if (attachment.storageKey) {
-      await this.storageService.delete(attachment.storage, attachment.storageKey)
+      await this.storageService.delete(this.storageService.getAttachmentStorageId(attachment), attachment.storageKey)
     }
     await this.em.removeAndFlush(attachment)
     return null
@@ -874,15 +886,23 @@ export class AdminService {
   }
 
   saveStorageConfig(dto: SaveStorageConfigDto) {
-    return this.storageService.saveConfig(dto)
+    return this.storageService.setDefaultTarget(dto.defaultTargetId)
   }
 
-  testStorageConfig(dto: TestStorageConfigDto) {
-    return this.storageService.testConfig(dto.config)
+  createStorageRemote(dto: RemoteStorageConfigDto) {
+    return this.storageService.createRemote(dto)
   }
 
-  migrateStorageAttachments() {
-    return this.storageService.migrateAttachments()
+  updateStorageRemote(id: string, dto: UpdateRemoteStorageConfigDto) {
+    return this.storageService.updateRemote(id, dto)
+  }
+
+  deleteStorageRemote(id: string) {
+    return this.storageService.deleteRemote(id)
+  }
+
+  testStorageConfig(dto: TestStorageConfigDto, id?: string) {
+    return this.storageService.testRemote(dto, id)
   }
 
   // ---------- 独立页面 ----------

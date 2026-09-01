@@ -29,6 +29,8 @@
   const detailItem = ref<Api.Blog.Attachment | null>(null)
   const uploadRef = useTemplateRef<UploadInstance>('uploadRef')
   const previewMode = ref<'info' | 'preview'>('info')
+  const storageConfig = ref<Api.Blog.StorageConfig | null>(null)
+  const uploadTargetId = ref('local')
   const router = useRouter()
 
   const stats = ref<Api.Blog.AttachmentStats>({
@@ -64,7 +66,10 @@
     stats.value.total ? Math.round((stats.value.categoryCounts.video / stats.value.total) * 100) : 0
   )
 
-  const assetUrl = (url: string) => (url.startsWith('/') ? url : `/${url}`)
+  // 附件 url 可能是本地存储的相对路径，也可能是对象存储（rusfs/s3）返回的绝对地址，
+  // 绝对地址（含协议或以 // 开头）直接使用，避免被错误拼接为 /http://... 形式的无效地址
+  const assetUrl = (url: string) =>
+    /^([a-z][a-z0-9+.-]*:)?\/\//i.test(url) || url.startsWith('/') ? url : `/${url}`
 
   function fileCategory(mimeType: string): Api.Blog.AttachmentCategory {
     const mt = (mimeType || '').toLowerCase()
@@ -144,11 +149,22 @@
     { debounce: 300 }
   )
 
+  async function openUploadDialog() {
+    uploadDialogVisible.value = true
+    try {
+      storageConfig.value = await blogApi.getStorageConfig()
+      uploadTargetId.value = storageConfig.value.defaultTargetId
+    } catch {
+      storageConfig.value = null
+      uploadTargetId.value = 'local'
+    }
+  }
+
   async function uploadFile(options: UploadRequestOptions) {
     try {
       const result = await blogApi.upload(options.file, (percent) => {
         options.onProgress({ percent } as UploadProgressEvent)
-      })
+      }, uploadTargetId.value)
       options.onSuccess(result)
       ElMessage.success(`「${options.file.name}」已上传`)
     } catch (error) {
@@ -390,7 +406,7 @@
     <ElCard class="art-table-card">
       <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="load">
         <template #left>
-          <ElButton type="primary" @click="uploadDialogVisible = true">
+          <ElButton type="primary" @click="openUploadDialog">
             <ArtSvgIcon icon="ri:upload-2-line" />上传文件
           </ElButton>
           <ElButton @click="router.push('/blog-system/storage')">
@@ -501,11 +517,23 @@
       width="520px"
       @closed="uploadRef?.clearFiles()"
     >
+      <div class="upload-target">
+        <span>上传到</span>
+        <ElSelect v-model="uploadTargetId" :disabled="!storageConfig" class="upload-target__select">
+          <ElOption label="本地存储" value="local" />
+          <ElOption
+            v-for="remote in storageConfig?.remotes ?? []"
+            :key="remote.id"
+            :label="remote.name"
+            :value="remote.id"
+          />
+        </ElSelect>
+      </div>
       <ElUpload
         ref="uploadRef"
         :http-request="uploadFile"
         :show-file-list="true"
-        accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.tar,.gz"
+        accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.tar,.gz,.md,.markdown,.html,.htm,.txt,.json,.csv,.xml"
         drag
         multiple
         @success="onUploadSuccess"
@@ -968,4 +996,9 @@
       grid-template-columns: repeat(2, 1fr);
     }
   }
+</style>
+
+<style scoped>
+  .upload-target { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; color: var(--art-gray-600); font-size: 13px; }
+  .upload-target__select { flex: 1; }
 </style>

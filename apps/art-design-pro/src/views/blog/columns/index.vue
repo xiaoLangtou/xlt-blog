@@ -8,6 +8,10 @@
   const columns_ = ref<Api.Blog.Column[]>([])
   const total = ref(0)
   const loading = ref(false)
+  const dialogVisible = ref(false)
+  const editVisible = ref(false)
+  const editingId = ref<number | null>(null)
+  let requestVersion = 0
 
   const params = reactive<Api.Blog.ColumnQuery>({
     page: 1,
@@ -16,7 +20,7 @@
     status: undefined
   })
   const searchFields = [
-    { prop: 'keyword', label: '专栏名称', placeholder: '搜索专栏名称' },
+    { prop: 'keyword', label: '专栏名称', placeholder: '搜索专栏名称或 Slug' },
     {
       prop: 'status',
       label: '状态',
@@ -43,11 +47,7 @@
         h('div', { class: 'column-name' }, [
           row.cover
             ? h('img', { class: 'column-name__cover', src: row.cover, alt: '' })
-            : h(
-                'span',
-                { class: 'column-name__cover column-name__cover--empty' },
-                row.name.slice(0, 1)
-              ),
+            : h('span', { class: 'column-name__cover column-name__cover--empty' }, row.name.slice(0, 1)),
           h('span', { class: 'column-name__text' }, row.name)
         ])
     },
@@ -70,29 +70,33 @@
     { prop: 'articleCount', label: '文章', width: 80, align: 'right' },
     { prop: 'sort', label: '排序', width: 80, align: 'right' },
     {
+      prop: 'updatedAt',
+      label: '更新时间',
+      width: 180,
+      formatter: (row) => formatDate(row.updatedAt)
+    },
+    {
       prop: 'operation',
       label: '操作',
       width: 140,
       fixed: 'right',
       formatter: (row) => [
-        h(ElButton, { link: true, type: 'primary', onClick: () => edit(row) }, () => '编辑'),
+        h(ElButton, { link: true, type: 'primary', onClick: () => openEdit(row.id) }, () => '编辑'),
         h(ElButton, { link: true, type: 'danger', onClick: () => remove(row) }, () => '删除')
       ]
     }
   ])
 
-  const dialogVisible = ref(false)
-  const editVisible = ref(false)
-  const editingId = ref<number | null>(null)
-
   async function load() {
+    const version = ++requestVersion
     loading.value = true
     try {
       const data = await blogApi.listColumns(params)
+      if (version !== requestVersion) return
       columns_.value = data.items ?? []
       total.value = data.total ?? 0
     } finally {
-      loading.value = false
+      if (version === requestVersion) loading.value = false
     }
   }
 
@@ -100,50 +104,62 @@
     dialogVisible.value = true
   }
 
-  function edit(item: unknown) {
-    const col = item as Api.Blog.Column
-    editingId.value = col.id
+  function openEdit(id: number) {
+    editingId.value = id
     editVisible.value = true
   }
 
-  async function remove(item: unknown) {
-    const col = item as Api.Blog.Column
-    await ElMessageBox.confirm(
-      `确认删除专栏「${col.name}」？删除后专栏内文章不会被删除。`,
-      '删除专栏',
-      {
-        type: 'warning'
-      }
-    )
-    await blogApi.deleteColumn(col.id)
+  function onCreated(id: number) {
+    void load()
+    openEdit(id)
+  }
+
+  async function remove(column: Api.Blog.Column) {
+    try {
+      await ElMessageBox.confirm(
+        `确认删除专栏「${column.name}」？删除后专栏内文章不会被删除。`,
+        '删除专栏',
+        { type: 'warning', confirmButtonText: '删除', confirmButtonClass: 'el-button--danger' }
+      )
+    } catch {
+      return
+    }
+    await blogApi.deleteColumn(column.id)
+    if (columns_.value.length === 1 && (params.page ?? 1) > 1) params.page = (params.page ?? 1) - 1
     await load()
     ElMessage.success('专栏已删除')
   }
 
   function search() {
     params.page = 1
-    load()
+    void load()
   }
 
   function reset() {
     params.keyword = ''
     params.status = undefined
     params.page = 1
-    load()
+    void load()
   }
 
   function handleSizeChange(size: number) {
     params.pageSize = size
     params.page = 1
-    load()
+    void load()
   }
 
   function handleCurrentChange(page: number) {
     params.page = page
-    load()
+    void load()
   }
 
-  onMounted(load)
+  function formatDate(value: string) {
+    return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(
+      new Date(value)
+    )
+  }
+
+  onMounted(() => void load())
 </script>
 
 <template>
@@ -162,6 +178,7 @@
           <ElButton type="primary" @click="openCreate">
             <ArtSvgIcon icon="ri:add-line" />新建专栏
           </ElButton>
+          <span class="column-header-hint">创建后可立即收录文章并调整展示顺序。</span>
         </template>
       </ArtTableHeader>
 
@@ -170,32 +187,29 @@
         :data="columns_"
         :columns="columns"
         :pagination="pagination"
-        :pagination-options="{ layout: 'total, prev, pager, next' }"
+        :pagination-options="{ layout: 'total, sizes, prev, pager, next' }"
         row-key="id"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
     </ElCard>
 
-    <ColumnCreateModal v-model:visible="dialogVisible" @success="load" />
+    <ColumnCreateModal v-model:visible="dialogVisible" @created="onCreated" />
     <ColumnEditModal v-model:visible="editVisible" :column-id="editingId" @success="load" />
   </div>
 </template>
 
 <style scoped>
-  .column-page {
-    display: flex;
-    flex-direction: column;
-  }
+  .column-page { display: flex; flex-direction: column; }
 
   .column-page :deep(.art-table-card .el-card__header) {
     padding: 12px 16px;
     border-bottom: 0;
   }
 
-  .column-page :deep(.art-table-card .el-card__body) {
-    padding: 12px 16px 16px;
-  }
+  .column-page :deep(.art-table-card .el-card__body) { padding: 12px 16px 16px; }
+
+  .column-header-hint { margin-left: 8px; color: var(--art-gray-500); font-size: 12px; }
 
   .column-page :deep(.column-name) {
     display: flex;
@@ -216,10 +230,10 @@
 
   .column-page :deep(.column-name__cover--empty) {
     display: grid;
-    place-items: center;
+    color: var(--art-gray-500);
     font-size: 15px;
     font-weight: 600;
-    color: var(--art-gray-500);
+    place-items: center;
   }
 
   .column-page :deep(.column-name__text) {
@@ -228,4 +242,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  @media (max-width: 720px) { .column-header-hint { display: none; } }
 </style>

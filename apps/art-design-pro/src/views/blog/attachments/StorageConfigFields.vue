@@ -1,48 +1,58 @@
 <script setup lang="ts">
-  defineProps<{
-    backend: Api.Blog.StorageBackend
-    config: Api.Blog.StorageConfig
+  const props = defineProps<{
+    model: Api.Blog.StorageRemoteConfigInput
     s3Providers: Array<{ label: string; value: Api.Blog.StorageS3Provider }>
+    isEditing?: boolean
   }>()
 
   const emit = defineEmits<{
-    credentialDirty: [field: 'rusfsAccessKey' | 'rusfsSecretKey' | 's3AccessKey' | 's3SecretKey']
+    credentialDirty: []
   }>()
+
+  function onCredentialInput() {
+    emit('credentialDirty')
+  }
 </script>
 
 <template>
   <ElForm label-position="top" class="storage-form">
-    <template v-if="backend === 'local'">
-      <ElFormItem label="访问 URL 前缀">
-        <ElInput v-model="config.local.publicUrlPrefix" placeholder="/uploads" />
-        <div class="field-help">附件对外访问时使用的 URL 前缀。</div>
+    <div class="storage-field-grid">
+      <ElFormItem label="配置名称" required>
+        <ElInput v-model="props.model.name" placeholder="例如：生产 RustFS、阿里云备份桶" />
       </ElFormItem>
-    </template>
-
-    <template v-else-if="backend === 'rusfs'">
-      <div class="storage-field-grid">
-        <ElFormItem label="RustFS 服务地址" required><ElInput v-model="config.rusfs.endpoint" placeholder="http://127.0.0.1:9010" /></ElFormItem>
-        <ElFormItem label="Bucket 名称" required><ElInput v-model="config.rusfs.bucket" placeholder="blog-media" /></ElFormItem>
-        <ElFormItem label="区域"><ElInput v-model="config.rusfs.region" placeholder="us-east-1" /></ElFormItem>
-        <ElFormItem label="Access Key" required><ElInput v-model="config.rusfs.accessKey" placeholder="未编辑则保留原值" @input="emit('credentialDirty', 'rusfsAccessKey')" /></ElFormItem>
-        <ElFormItem label="Secret Key" required><ElInput v-model="config.rusfs.secretKey" type="password" show-password placeholder="未编辑则保留原值" @input="emit('credentialDirty', 'rusfsSecretKey')" /></ElFormItem>
-        <ElFormItem label="访问 URL 前缀"><ElInput v-model="config.rusfs.publicUrlBase" placeholder="https://blog.example.com/rusfs" /></ElFormItem>
-      </div>
-      <ElFormItem class="storage-switch-field" label="使用 Path-style 地址"><ElSwitch v-model="config.rusfs.pathStyle" /></ElFormItem>
-    </template>
-
-    <template v-else>
-      <div class="storage-field-grid">
-        <ElFormItem label="服务商"><ElSelect v-model="config.s3.provider"><ElOption v-for="provider in s3Providers" :key="provider.value" :label="provider.label" :value="provider.value" /></ElSelect></ElFormItem>
-        <ElFormItem label="服务端点" :required="config.s3.provider === 'custom'"><ElInput v-model="config.s3.endpoint" placeholder="https://s3.example.com" /></ElFormItem>
-        <ElFormItem label="Bucket 名称" required><ElInput v-model="config.s3.bucket" placeholder="xlt-blog-media" /></ElFormItem>
-        <ElFormItem label="地域 (Region)"><ElInput v-model="config.s3.region" placeholder="cn-north-4" /></ElFormItem>
-        <ElFormItem label="Access Key" required><ElInput v-model="config.s3.accessKey" placeholder="未编辑则保留原值" @input="emit('credentialDirty', 's3AccessKey')" /></ElFormItem>
-        <ElFormItem label="Secret Key" required><ElInput v-model="config.s3.secretKey" type="password" show-password placeholder="未编辑则保留原值" @input="emit('credentialDirty', 's3SecretKey')" /></ElFormItem>
-        <ElFormItem label="自定义域名 / CDN"><ElInput v-model="config.s3.publicUrlBase" placeholder="https://cdn.example.com" /></ElFormItem>
-      </div>
-      <ElFormItem class="storage-switch-field" label="使用 Path-style 地址"><ElSwitch v-model="config.s3.pathStyle" /></ElFormItem>
-    </template>
+      <ElFormItem label="存储类型" required>
+        <ElSelect v-model="props.model.kind" :disabled="isEditing">
+          <ElOption label="RustFS（S3 兼容）" value="rusfs" />
+          <ElOption label="对象存储" value="s3" />
+        </ElSelect>
+      </ElFormItem>
+      <ElFormItem v-if="props.model.kind === 's3'" label="服务商">
+        <ElSelect v-model="props.model.provider">
+          <ElOption v-for="provider in s3Providers" :key="provider.value" :label="provider.label" :value="provider.value" />
+        </ElSelect>
+      </ElFormItem>
+      <ElFormItem label="服务端点" :required="props.model.kind === 'rusfs' || props.model.provider === 'custom'">
+        <ElInput v-model="props.model.endpoint" placeholder="http://127.0.0.1:9000 或 https://s3.example.com" />
+      </ElFormItem>
+      <ElFormItem label="Bucket 名称" required>
+        <ElInput v-model="props.model.bucket" placeholder="xlt-blog-media" />
+      </ElFormItem>
+      <ElFormItem label="地域 (Region)">
+        <ElInput v-model="props.model.region" placeholder="us-east-1" />
+      </ElFormItem>
+      <ElFormItem label="Access Key" required>
+        <ElInput v-model="props.model.accessKey" placeholder="未编辑则保留原值" @input="onCredentialInput" />
+      </ElFormItem>
+      <ElFormItem label="Secret Key" required>
+        <ElInput v-model="props.model.secretKey" type="password" show-password placeholder="未编辑则保留原值" @input="onCredentialInput" />
+      </ElFormItem>
+      <ElFormItem label="自定义域名 / CDN">
+        <ElInput v-model="props.model.publicUrlBase" placeholder="https://cdn.example.com" />
+      </ElFormItem>
+    </div>
+    <ElFormItem class="storage-switch-field" label="使用 Path-style 地址">
+      <ElSwitch v-model="props.model.pathStyle" />
+    </ElFormItem>
   </ElForm>
 </template>
 
@@ -52,6 +62,5 @@
   .storage-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
   .storage-field-grid :deep(.el-select) { width: 100%; }
   .storage-switch-field { margin-bottom: 0 !important; }
-  .field-help { margin-top: 6px; color: var(--el-text-color-secondary); font-size: 12px; }
   @media (max-width: 760px) { .storage-field-grid { grid-template-columns: 1fr; } }
 </style>

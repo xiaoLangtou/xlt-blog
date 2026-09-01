@@ -12,7 +12,7 @@ import type { StorageDriver } from './storage-driver.interface'
 import type {
   PutResult,
   S3CompatibleStorageConfig,
-  StorageBackend,
+  StorageKind,
   StorageObjectInput
 } from './storage.types'
 
@@ -21,7 +21,7 @@ export class S3CompatibleDriver implements StorageDriver {
   private readonly endpoint?: string
 
   constructor(
-    private readonly backend: Extract<StorageBackend, 'rusfs' | 's3'>,
+    private readonly backend: Extract<StorageKind, 'rusfs' | 's3'>,
     private readonly config: S3CompatibleStorageConfig
   ) {
     this.endpoint = this.normalizeEndpoint(config.endpoint)

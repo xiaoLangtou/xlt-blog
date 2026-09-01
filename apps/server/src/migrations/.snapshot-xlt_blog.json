@@ -752,10 +752,35 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "string"
+        },
+        "storage_id": {
+          "name": "storage_id",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
         }
       },
       "name": "attachments",
       "indexes": [
+        {
+          "columnNames": [
+            "storage_id"
+          ],
+          "keyName": "attachments_storage_id_index",
+          "unique": false,
+          "primary": false,
+          "constraint": false
+        },
         {
           "columnNames": [
             "id"

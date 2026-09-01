@@ -1,5 +1,8 @@
 import request from '@/utils/http'
 
+/** 文件上传超时时间（毫秒）：大文件上传耗时较长，需比常规请求的全局超时更长 */
+const UPLOAD_TIMEOUT = 5 * 60 * 1000
+
 export const blogApi = {
   listArticles(params: Api.Blog.ArticleQuery) {
     return request.get<Api.Blog.Paginated<Api.Blog.Article>>({
@@ -41,6 +44,7 @@ export const blogApi = {
     return request.post<Api.Blog.ImportArticlesResult>({
       url: '/admin/articles/import',
       data,
+      timeout: UPLOAD_TIMEOUT,
       onUploadProgress: (event) => {
         if (onProgress && event.total) {
           onProgress(Math.round((event.loaded / event.total) * 100))
@@ -132,19 +136,25 @@ export const blogApi = {
   getStorageConfig() {
     return request.get<Api.Blog.StorageConfig>({ url: '/admin/storage/config' })
   },
-  updateStorageConfig(params: Api.Blog.StorageConfigInput) {
-    return request.put<Api.Blog.StorageConfig>({ url: '/admin/storage/config', params })
-  },
-  testStorageConfig(config?: Api.Blog.StorageConfigInput) {
-    return request.post<Api.Blog.StorageTestResult>({
-      url: '/admin/storage/test',
-      params: config ? { config } : {}
+  updateStorageConfig(defaultTargetId: string) {
+    return request.put<Api.Blog.StorageConfig>({
+      url: '/admin/storage/config',
+      params: { defaultTargetId }
     })
   },
-  migrateStorage() {
-    return request.post<Api.Blog.StorageMigrationResult>({
-      url: '/admin/storage/migrate',
-      params: {}
+  createStorageRemote(params: Api.Blog.StorageRemoteConfigInput) {
+    return request.post<Api.Blog.StorageRemoteConfig>({ url: '/admin/storage/remotes', params })
+  },
+  updateStorageRemote(id: string, params: Api.Blog.StorageRemoteUpdateInput) {
+    return request.put<Api.Blog.StorageRemoteConfig>({ url: `/admin/storage/remotes/${id}`, params })
+  },
+  deleteStorageRemote(id: string) {
+    return request.del<void>({ url: `/admin/storage/remotes/${id}` })
+  },
+  testStorageConfig(params: Api.Blog.StorageRemoteConfigInput, id?: string) {
+    return request.post<Api.Blog.StorageTestResult>({
+      url: id ? `/admin/storage/remotes/${id}/test` : '/admin/storage/remotes/test',
+      params
     })
   },
   deleteAttachment(id: number) {
@@ -186,12 +196,14 @@ export const blogApi = {
   updateResume(params: Api.Blog.Resume) {
     return request.put<Api.Blog.Resume>({ url: '/admin/resume', params })
   },
-  upload(file: File, onProgress?: (percent: number) => void) {
+  upload(file: File, onProgress?: (percent: number) => void, storageId?: string) {
     const data = new FormData()
     data.append('file', file)
+    if (storageId) data.append('storageId', storageId)
     return request.post<Api.Blog.UploadResult>({
       url: '/admin/upload',
       data,
+      timeout: UPLOAD_TIMEOUT,
       showErrorMessage: true,
       onUploadProgress: (event) => {
         if (onProgress && event.total) {

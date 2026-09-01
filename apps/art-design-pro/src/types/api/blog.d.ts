@@ -313,10 +313,14 @@ declare namespace Api {
       education: ResumeEducation[]
     }
 
-    type StorageBackend = 'local' | 'rusfs' | 's3'
+    type StorageKind = 'local' | 'rusfs' | 's3'
     type StorageS3Provider = 'aws' | 'huawei-obs' | 'aliyun-oss' | 'tencent-cos' | 'custom'
 
     interface StorageRemoteConfig {
+      id: string
+      name: string
+      kind: Exclude<StorageKind, 'local'>
+      provider?: StorageS3Provider
       endpoint?: string
       bucket: string
       accessKey: string
@@ -327,32 +331,20 @@ declare namespace Api {
     }
 
     interface StorageConfig {
-      active: StorageBackend
+      /** 未指定 storageId 时的默认上传目标；其他已配置实例仍可独立使用。 */
+      defaultTargetId: string
       local: {
-        publicUrlPrefix?: string
+        publicUrlPrefix: '/uploads'
       }
-      rusfs: StorageRemoteConfig
-      s3: StorageRemoteConfig & {
-        provider: StorageS3Provider
-      }
+      remotes: StorageRemoteConfig[]
     }
 
-    type StorageConfigInput = Partial<StorageConfig>
+    type StorageRemoteConfigInput = Omit<StorageRemoteConfig, 'id'>
+    type StorageRemoteUpdateInput = Partial<StorageRemoteConfigInput>
 
     interface StorageTestResult {
       success: boolean
       message: string
-    }
-
-    interface StorageMigrationResult {
-      total: number
-      migrated: number
-      failed: number
-      failures: Array<{
-        id: number
-        filename: string
-        error: string
-      }>
     }
 
     interface UploadResult {
