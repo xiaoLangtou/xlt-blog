@@ -279,8 +279,10 @@ declare namespace Api {
       end: string
       current: boolean
       skills: string[]
-      highlights: string[]
-      responsibilities: string[]
+      /** 富文本 HTML */
+      highlights: string
+      /** 富文本 HTML */
+      responsibilities: string
     }
 
     interface ResumeProject {
@@ -289,9 +291,11 @@ declare namespace Api {
       role: string
       start: string
       end: string
+      /** 富文本 HTML */
       description: string
       stack: string[]
-      highlights: string[]
+      /** 富文本 HTML */
+      highlights: string
     }
 
     interface ResumeEducation {

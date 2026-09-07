@@ -8,7 +8,8 @@
     "start": "node dist/main.js",
     "migration:create": "mikro-orm migration:create",
     "migration:up": "mikro-orm migration:up",
-    "seed": "mikro-orm seeder:run"
+    "seed": "mikro-orm seeder:run",
+    "sync:juejin": "ts-node --transpile-only src/scripts/sync-juejin.ts"
   },
   "mikro-orm": {
     "useTsNode": true,
@@ -59,7 +60,9 @@
     "multer": "^2.2.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "shiki": "^3.13.0"
+    "shiki": "^3.13.0",
+    "turndown": "catalog:",
+    "turndown-plugin-gfm": "catalog:"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.24",
@@ -68,6 +71,7 @@
     "@types/markdown-it": "^14.1.2",
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.2",
+    "@types/turndown": "catalog:",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }

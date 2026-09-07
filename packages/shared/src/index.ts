@@ -388,16 +388,10 @@ export const DEFAULT_RESUME: ResumeDto = {
       end: '至今',
       current: true,
       skills: ['Vue', 'HTML5', 'CSS', 'JavaScript'],
-      highlights: [
-        '主导 qiankun 微前端架构落地，抽离通用模板，支撑 5+ 子应用快速集成。',
-        '搭建团队工程化体系，集成 ESLint、Prettier、Husky 等规范工具链。',
-        '统筹前端任务、工时评估与跨职能协作，保障核心业务模块高质量交付。'
-      ],
-      responsibilities: [
-        '负责前端架构设计与技术选型，保障项目的可扩展性和可维护性。',
-        '沉淀组件库、工具库和开发规范，提升团队研发效能。',
-        '参与生产部署与运维保障，快速定位和修复线上问题。'
-      ]
+      highlights:
+        '<ul><li>主导 qiankun 微前端架构落地，抽离通用模板，支撑 5+ 子应用快速集成。</li><li>搭建团队工程化体系，集成 ESLint、Prettier、Husky 等规范工具链。</li><li>统筹前端任务、工时评估与跨职能协作，保障核心业务模块高质量交付。</li></ul>',
+      responsibilities:
+        '<ul><li>负责前端架构设计与技术选型，保障项目的可扩展性和可维护性。</li><li>沉淀组件库、工具库和开发规范，提升团队研发效能。</li><li>参与生产部署与运维保障，快速定位和修复线上问题。</li></ul>'
     },
     {
       id: 'offcn',
@@ -408,8 +402,8 @@ export const DEFAULT_RESUME: ResumeDto = {
       end: '至今',
       current: true,
       skills: ['Vue', 'HTML5', 'JavaScript', 'CSS', 'UniApp'],
-      highlights: ['负责小程序、后台管理系统与接口开发，参与需求研讨、交付和文档编写。'],
-      responsibilities: ['完成业务功能的前后端开发与维护，支持小程序和管理端持续迭代。']
+      highlights: '<p>负责小程序、后台管理系统与接口开发，参与需求研讨、交付和文档编写。</p>',
+      responsibilities: '<p>完成业务功能的前后端开发与维护，支持小程序和管理端持续迭代。</p>'
     },
     {
       id: 'weijian',
@@ -420,8 +414,8 @@ export const DEFAULT_RESUME: ResumeDto = {
       end: '2020.03',
       current: false,
       skills: ['HTML', 'PHP', '微信小程序'],
-      highlights: ['完成 PC 页面与微信小程序的开发、调试和维护。'],
-      responsibilities: ['根据开发任务交付页面与功能模块。']
+      highlights: '<p>完成 PC 页面与微信小程序的开发、调试和维护。</p>',
+      responsibilities: '<p>根据开发任务交付页面与功能模块。</p>'
     }
   ],
   projects: [
@@ -431,9 +425,11 @@ export const DEFAULT_RESUME: ResumeDto = {
       role: '前端开发工程师',
       start: '2023.01',
       end: '至今',
-      description: '融合 AI 视频识别与大数据分析，实现单车违规停放识别、企业考核、区域热力分析与移动执法。',
+      description:
+        '<p>融合 AI 视频识别与大数据分析，实现单车违规停放识别、企业考核、区域热力分析与移动执法。</p>',
       stack: ['Vue 3', 'Pinia', 'Element Plus', 'ECharts', 'ArcGIS API', 'UniApp'],
-      highlights: ['搭建 PC 管理端与移动执法端架构，制定开发规范。', '实现 GIS 可视化、违规趋势和区域分析等核心模块。', '通过代码分割、资源压缩与 CDN 加速将首屏优化至 2 秒内。']
+      highlights:
+        '<ul><li>搭建 PC 管理端与移动执法端架构，制定开发规范。</li><li>实现 GIS 可视化、违规趋势和区域分析等核心模块。</li><li>通过代码分割、资源压缩与 CDN 加速将首屏优化至 2 秒内。</li></ul>'
     },
     {
       id: 'huli-portal',
@@ -441,9 +437,11 @@ export const DEFAULT_RESUME: ResumeDto = {
       role: '前端开发工程师',
       start: '2023.01',
       end: '至今',
-      description: '构建统一身份认证、权限管理、数据互通和业务系统集成的区级数字化治理门户。',
+      description:
+        '<p>构建统一身份认证、权限管理、数据互通和业务系统集成的区级数字化治理门户。</p>',
       stack: ['Vue 2', 'Vuex', 'Element UI', 'ArcGIS API for JavaScript'],
-      highlights: ['负责前端架构与 UI 标准，协调三人前端团队交付。', '实现统一门户、数据看板与 GIS 地图能力。', '完成主流浏览器兼容与自动化构建部署流程。']
+      highlights:
+        '<ul><li>负责前端架构与 UI 标准，协调三人前端团队交付。</li><li>实现统一门户、数据看板与 GIS 地图能力。</li><li>完成主流浏览器兼容与自动化构建部署流程。</li></ul>'
     },
     {
       id: 'talent-platform',
@@ -451,9 +449,11 @@ export const DEFAULT_RESUME: ResumeDto = {
       role: '前端工程师',
       start: '2022.05',
       end: '至今',
-      description: '提供线上学习、线下培训关联和业绩评价查询的一站式数字化人才服务。',
+      description:
+        '<p>提供线上学习、线下培训关联和业绩评价查询的一站式数字化人才服务。</p>',
       stack: ['Vue 3', 'Vuex', 'Qiankun', 'Element UI', 'UniApp'],
-      highlights: ['独立完成学习中心、评价体系等 5+ 核心模块。', '搭建 CI/CD 发布流程，提升部署效率。', '承担需求拆解、现场部署与团队资源协调。']
+      highlights:
+        '<ul><li>独立完成学习中心、评价体系等 5+ 核心模块。</li><li>搭建 CI/CD 发布流程，提升部署效率。</li><li>承担需求拆解、现场部署与团队资源协调。</li></ul>'
     }
   ],
   education: [

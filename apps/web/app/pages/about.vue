@@ -1,8 +1,39 @@
 <script setup lang="ts">
 import type { ResumeDto, SiteStats } from '@xlt-blog/shared'
 
-const { data: resume } = useApi<ResumeDto>('/site/resume')
+const { data: resumeSource } = useApi<ResumeDto>('/site/resume')
 const { data: stats } = useApi<SiteStats>('/site/stats')
+
+/** 兼容旧版数据：字符串数组转列表 HTML，纯文本转段落 HTML */
+function toRichHtml(value: unknown): string {
+  if (Array.isArray(value)) {
+    const text = value
+      .filter((item): item is string => typeof item === 'string')
+      .map(item => item.trim())
+      .filter(Boolean)
+      .join('</li><li>')
+    return text ? `<ul><li>${text}</li></ul>` : ''
+  }
+  if (typeof value !== 'string' || !value.trim()) return ''
+  return /^<[a-z]/i.test(value.trim()) ? value : `<p>${value}</p>`
+}
+
+const resume = computed(() => {
+  if (!resumeSource.value) return resumeSource.value
+  return {
+    ...resumeSource.value,
+    experiences: resumeSource.value.experiences.map(item => ({
+      ...item,
+      highlights: toRichHtml(item.highlights),
+      responsibilities: toRichHtml(item.responsibilities)
+    })),
+    projects: resumeSource.value.projects.map(item => ({
+      ...item,
+      description: toRichHtml(item.description),
+      highlights: toRichHtml(item.highlights)
+    }))
+  }
+})
 
 useSeoMeta({
   title: () => resume.value?.profile.name ? `关于 ${resume.value.profile.name}` : '关于',
@@ -74,8 +105,8 @@ function formatRange(start: string, end: string) {
                 <time class="font-mono text-xs text-dimmed shrink-0">{{ formatRange(experience.start, experience.end) }}</time>
               </div>
               <div v-if="experience.skills.length" class="flex flex-wrap gap-x-2 mt-4 font-mono text-[11px] text-dimmed"><span v-for="skill in experience.skills" :key="skill">{{ skill }}</span></div>
-              <ul v-if="experience.highlights.length" class="mt-4 space-y-2 text-sm text-muted leading-relaxed"><li v-for="item in experience.highlights" :key="item" class="flex gap-2"><span class="text-(--color-cinnabar)" aria-hidden="true">•</span><span>{{ item }}</span></li></ul>
-              <details v-if="experience.responsibilities.length" class="mt-4 text-sm"><summary class="cursor-pointer text-dimmed hover:text-primary">查看职责内容</summary><ul class="mt-3 space-y-2 text-muted leading-relaxed"><li v-for="item in experience.responsibilities" :key="item">{{ item }}</li></ul></details>
+              <div v-if="experience.highlights" class="article-content mt-4 text-sm text-muted leading-relaxed" v-html="experience.highlights" />
+              <details v-if="experience.responsibilities" class="mt-4 text-sm"><summary class="cursor-pointer text-dimmed hover:text-primary">查看职责内容</summary><div class="article-content mt-3 text-muted leading-relaxed" v-html="experience.responsibilities" /></details>
             </li>
           </ol>
         </section>
@@ -85,9 +116,9 @@ function formatRange(start: string, end: string) {
           <div class="space-y-5">
             <article v-for="project in resume.projects" :key="project.id" class="rounded-xs border border-default/70 bg-elevated/20 p-5 sm:p-6">
               <div class="flex flex-col sm:flex-row sm:justify-between gap-2"><div><h3 class="font-display text-xl text-highlighted tracking-wide">{{ project.name }}</h3><p class="text-sm text-primary mt-1">{{ project.role }}</p></div><time class="font-mono text-xs text-dimmed">{{ formatRange(project.start, project.end) }}</time></div>
-              <p class="text-sm text-muted leading-relaxed mt-4">{{ project.description }}</p>
+              <div v-if="project.description" class="article-content text-sm text-muted leading-relaxed mt-4" v-html="project.description" />
               <div class="flex flex-wrap gap-2 mt-4"><span v-for="item in project.stack" :key="item" class="font-mono text-[10px] text-dimmed px-2 py-1 border border-default/60">{{ item }}</span></div>
-              <ul v-if="project.highlights.length" class="mt-5 space-y-2 text-sm text-muted leading-relaxed"><li v-for="item in project.highlights" :key="item" class="flex gap-2"><span class="text-(--color-cinnabar)" aria-hidden="true">•</span><span>{{ item }}</span></li></ul>
+              <div v-if="project.highlights" class="article-content mt-5 text-sm text-muted leading-relaxed" v-html="project.highlights" />
             </article>
           </div>
         </section>

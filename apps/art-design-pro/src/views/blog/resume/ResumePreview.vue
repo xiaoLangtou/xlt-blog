@@ -103,9 +103,7 @@
               <div v-if="item.skills.length" class="paper__tags">
                 <span v-for="skill in item.skills" :key="skill">{{ skill }}</span>
               </div>
-              <ul v-if="item.highlights.length" class="paper__list">
-                <li v-for="text in item.highlights" :key="text">{{ text }}</li>
-              </ul>
+              <div v-if="item.highlights" class="paper__list paper__rich" v-html="item.highlights" />
             </li>
           </ol>
           <p v-else class="paper__empty">暂无工作经历</p>
@@ -120,13 +118,11 @@
                 <time>{{ formatRange(item.start, item.end) || '—' }}</time>
               </div>
               <p v-if="item.role" class="paper__sub paper__sub--accent">{{ item.role }}</p>
-              <p v-if="item.description" class="paper__desc">{{ item.description }}</p>
+              <p v-if="item.description" class="paper__desc paper__rich" v-html="item.description" />
               <div v-if="item.stack.length" class="paper__tags">
                 <span v-for="tech in item.stack" :key="tech">{{ tech }}</span>
               </div>
-              <ul v-if="item.highlights.length" class="paper__list">
-                <li v-for="text in item.highlights" :key="text">{{ text }}</li>
-              </ul>
+              <div v-if="item.highlights" class="paper__list paper__rich" v-html="item.highlights" />
             </article>
           </template>
           <p v-else class="paper__empty">暂无项目经验</p>
@@ -473,6 +469,34 @@
     margin: 5px 0 0;
     font-size: 12.5px;
     color: var(--art-gray-600);
+  }
+
+  /* 富文本 HTML 渲染 */
+  .paper__rich {
+    font-size: 12.5px;
+    color: var(--art-gray-600);
+  }
+
+  .paper__rich ul,
+  .paper__rich ol {
+    padding: 0;
+    margin: 7px 0 0;
+    list-style: none;
+  }
+
+  .paper__rich li {
+    display: flex;
+    gap: 7px;
+  }
+
+  .paper__rich ul li::before {
+    flex-shrink: 0;
+    color: var(--main-color);
+    content: '•';
+  }
+
+  .paper__rich p {
+    margin: 5px 0 0;
   }
 
   @media (width <= 480px) {

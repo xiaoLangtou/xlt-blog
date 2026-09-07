@@ -2,6 +2,7 @@
   import { ElMessage } from 'element-plus'
   import { blogApi } from '@/api/blog'
   import ResumePreview from './ResumePreview.vue'
+  import ResumeRichEditor from './ResumeRichEditor.vue'
 
   const loading = ref(false)
   const form = reactive<Api.Blog.Resume>({
@@ -47,6 +48,36 @@
     items.splice(nextIndex, 0, item!)
   }
 
+  /** 兼容旧版数据：字符串数组转列表 HTML，纯文本转段落 HTML */
+  function toRichHtml(value: unknown): string {
+    if (Array.isArray(value)) {
+      const text = value
+        .filter((item): item is string => typeof item === 'string')
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .join('</li><li>')
+      return text ? `<ul><li>${text}</li></ul>` : ''
+    }
+    if (typeof value !== 'string' || !value.trim()) return ''
+    return /^<[a-z]/i.test(value.trim()) ? value : `<p>${value}</p>`
+  }
+
+  function normalizeResume(resume: Api.Blog.Resume): Api.Blog.Resume {
+    return {
+      ...resume,
+      experiences: resume.experiences.map((item) => ({
+        ...item,
+        highlights: toRichHtml(item.highlights),
+        responsibilities: toRichHtml(item.responsibilities)
+      })),
+      projects: resume.projects.map((item) => ({
+        ...item,
+        description: toRichHtml(item.description),
+        highlights: toRichHtml(item.highlights)
+      }))
+    }
+  }
+
   function addExperience() {
     form.experiences.push({
       id: createId('experience'),
@@ -57,8 +88,8 @@
       end: '',
       current: false,
       skills: [],
-      highlights: [],
-      responsibilities: []
+      highlights: '',
+      responsibilities: ''
     })
   }
 
@@ -71,7 +102,7 @@
       end: '',
       description: '',
       stack: [],
-      highlights: []
+      highlights: ''
     })
   }
 
@@ -90,7 +121,7 @@
   async function load() {
     loading.value = true
     try {
-      Object.assign(form, await blogApi.getResume())
+      Object.assign(form, normalizeResume(await blogApi.getResume()))
     } finally {
       loading.value = false
     }
@@ -270,19 +301,11 @@
                     :model-value="textList(item.skills)"
                     @update:model-value="setTextList(item.skills, $event)"
                 /></ElFormItem>
-                <ElFormItem label="主要业绩（每行一条）"
-                  ><ElInput
-                    :model-value="textList(item.highlights)"
-                    type="textarea"
-                    :rows="3"
-                    @update:model-value="setTextList(item.highlights, $event)"
+                <ElFormItem label="主要业绩"
+                  ><ResumeRichEditor v-model="item.highlights"
                 /></ElFormItem>
-                <ElFormItem label="职责内容（每行一条）" class="form-item--flush"
-                  ><ElInput
-                    :model-value="textList(item.responsibilities)"
-                    type="textarea"
-                    :rows="3"
-                    @update:model-value="setTextList(item.responsibilities, $event)"
+                <ElFormItem label="职责内容" class="form-item--flush"
+                  ><ResumeRichEditor v-model="item.responsibilities"
                 /></ElFormItem>
               </div>
             </div>
@@ -348,19 +371,15 @@
                   <ElFormItem label="结束时间"><ElInput v-model="item.end" /></ElFormItem>
                 </div>
                 <ElFormItem label="项目描述"
-                  ><ElInput v-model="item.description" type="textarea" :rows="3"
+                  ><ResumeRichEditor v-model="item.description"
                 /></ElFormItem>
                 <ElFormItem label="技术栈（逗号或换行分隔）"
                   ><ElInput
                     :model-value="textList(item.stack)"
                     @update:model-value="setTextList(item.stack, $event)"
                 /></ElFormItem>
-                <ElFormItem label="项目成果（每行一条）" class="form-item--flush"
-                  ><ElInput
-                    :model-value="textList(item.highlights)"
-                    type="textarea"
-                    :rows="3"
-                    @update:model-value="setTextList(item.highlights, $event)"
+                <ElFormItem label="项目成果" class="form-item--flush"
+                  ><ResumeRichEditor v-model="item.highlights"
                 /></ElFormItem>
               </div>
             </div>

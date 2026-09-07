@@ -16,7 +16,8 @@ import {
   MenuItemConfig,
   ResumeDto,
   SiteConfig,
-  THEME_COLORS
+  THEME_COLORS,
+  sanitizeRenderHtml
 } from '@xlt-blog/shared'
 import { renderContentHtml } from '../content/content-renderer'
 import {
@@ -753,9 +754,22 @@ export class AdminService {
   }
 
   async saveResume(dto: SaveResumeDto): Promise<ResumeDto> {
-    await this.upsertSetting('resume', dto)
+    const safe: ResumeDto = {
+      ...dto,
+      experiences: dto.experiences.map((item) => ({
+        ...item,
+        highlights: sanitizeRenderHtml(item.highlights),
+        responsibilities: sanitizeRenderHtml(item.responsibilities)
+      })),
+      projects: dto.projects.map((item) => ({
+        ...item,
+        description: sanitizeRenderHtml(item.description),
+        highlights: sanitizeRenderHtml(item.highlights)
+      }))
+    }
+    await this.upsertSetting('resume', safe)
     await this.em.flush()
-    return dto
+    return safe
   }
 
   // ---------- 附件 ----------

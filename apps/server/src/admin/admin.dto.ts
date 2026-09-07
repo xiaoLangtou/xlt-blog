@@ -310,8 +310,10 @@ class ResumeExperienceDto {
   @IsString() @MaxLength(30) end!: string
   @IsBoolean() current!: boolean
   @IsArray() @IsString({ each: true }) @MaxLength(100, { each: true }) skills!: string[]
-  @IsArray() @IsString({ each: true }) @MaxLength(1000, { each: true }) highlights!: string[]
-  @IsArray() @IsString({ each: true }) @MaxLength(1000, { each: true }) responsibilities!: string[]
+  /** 富文本 HTML */
+  @IsString() @MaxLength(20000) highlights!: string
+  /** 富文本 HTML */
+  @IsString() @MaxLength(20000) responsibilities!: string
 }
 
 class ResumeProjectDto {
@@ -320,9 +322,11 @@ class ResumeProjectDto {
   @IsString() @MaxLength(100) role!: string
   @IsString() @MaxLength(30) start!: string
   @IsString() @MaxLength(30) end!: string
-  @IsString() @MaxLength(3000) description!: string
+  /** 富文本 HTML */
+  @IsString() @MaxLength(20000) description!: string
   @IsArray() @IsString({ each: true }) @MaxLength(100, { each: true }) stack!: string[]
-  @IsArray() @IsString({ each: true }) @MaxLength(1000, { each: true }) highlights!: string[]
+  /** 富文本 HTML */
+  @IsString() @MaxLength(20000) highlights!: string
 }
 
 class ResumeEducationDto {
